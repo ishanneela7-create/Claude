@@ -1,0 +1,122 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Blue + green color scheme. Values are "R G B" so Tailwind can add opacity. */
+:root {
+  --page: 243 247 251;
+  --surface: 255 255 255;
+  --raised: 232 241 248;
+  --line: 205 219 232;
+  --ink: 14 32 50;
+  --muted: 79 98 117;
+  --brand: 18 86 184;
+  --brand-ink: 255 255 255;
+  --accent: 12 120 74;
+  --accent-ink: 255 255 255;
+  --danger: 176 28 44;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --page: 9 19 30;
+    --surface: 15 29 43;
+    --raised: 23 41 59;
+    --line: 41 63 85;
+    --ink: 232 241 248;
+    --muted: 158 179 198;
+    --brand: 120 175 255;
+    --brand-ink: 6 20 36;
+    --accent: 74 205 140;
+    --accent-ink: 4 28 18;
+    --danger: 255 128 138;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme='dark'] {
+  --page: 9 19 30;
+  --surface: 15 29 43;
+  --raised: 23 41 59;
+  --line: 41 63 85;
+  --ink: 232 241 248;
+  --muted: 158 179 198;
+  --brand: 120 175 255;
+  --brand-ink: 6 20 36;
+  --accent: 74 205 140;
+  --accent-ink: 4 28 18;
+  --danger: 255 128 138;
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: rgb(var(--page));
+  color: rgb(var(--ink));
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 3px solid rgb(var(--brand));
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex min-h-[36px] items-center justify-center gap-2 rounded-md border border-line bg-surface px-3 text-sm font-medium text-ink hover:bg-raised disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply border-brand bg-brand text-brand-ink hover:bg-brand/90;
+  }
+  .btn-accent {
+    @apply border-accent bg-accent text-accent-ink hover:bg-accent/90;
+  }
+  .btn-danger {
+    @apply border-danger text-danger hover:bg-danger/10;
+  }
+  .btn-icon {
+    @apply inline-flex h-9 w-9 items-center justify-center rounded-md border border-transparent text-ink hover:bg-raised disabled:opacity-40;
+  }
+  .field {
+    @apply w-full rounded-md border border-line bg-surface px-3 py-2 text-sm text-ink placeholder:text-muted;
+  }
+  .label {
+    @apply mb-1 block text-xs font-semibold uppercase tracking-wide text-muted;
+  }
+  .error-text {
+    @apply mt-1 text-xs font-medium text-danger;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full bg-raised px-2 py-0.5 text-xs font-medium text-ink;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+.checker {
+  background-image:
+    linear-gradient(45deg, #c9d3dd 25%, transparent 25%),
+    linear-gradient(-45deg, #c9d3dd 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #c9d3dd 75%),
+    linear-gradient(-45deg, transparent 75%, #c9d3dd 75%);
+  background-size: 8px 8px;
+  background-position:
+    0 0,
+    0 4px,
+    4px -4px,
+    -4px 0;
+}

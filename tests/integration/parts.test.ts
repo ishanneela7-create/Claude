@@ -144,3 +144,19 @@ describe('custom part files', () => {
     expect((await app.api.get(`/api/parts/${official.body.id}/versions`)).status).toBe(409);
   });
 });
+
+describe('saving without real changes', () => {
+  it('does not make a new version or a history entry when nothing changed', async () => {
+    const created = await app.api.post('/api/parts').send(customPart({ tags: ['a'] }));
+    const same = await app.api.patch(`/api/parts/${created.body.id}`).send({
+      name: created.body.name,
+      width_plates: 4,
+      material: 'PLA',
+      tags: ['A'],
+      quantity: 2,
+    });
+    expect(same.body.id).toBe(created.body.id);
+    expect(same.body.version).toBe(1);
+    expect((await app.api.get('/api/history')).body).toHaveLength(1);
+  });
+});

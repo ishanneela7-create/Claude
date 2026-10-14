@@ -2,7 +2,7 @@ import type { Database } from 'better-sqlite3';
 import type { PartInput, PartPatch } from '@shared/partSchemas';
 import type { PartRecord } from '@shared/types';
 import { conflict, notFound } from '../http';
-import { ActionRecorder } from '../recorder';
+import { ActionRecorder, readPartTags, type Row } from '../recorder';
 import { changesDesign, createNewVersion } from './partVersions';
 import { getPartRecord } from './partRows';
 import { reindexParts } from './searchIndex';
@@ -32,12 +32,30 @@ export function createPart(db: Database, input: PartInput): PartRecord {
   return getPart(db, id);
 }
 
-export function updatePart(db: Database, id: string, patch: PartPatch): PartRecord {
+/** Keeps only the fields that really differ, so saving an unchanged form does nothing. */
+function withoutUnchanged(db: Database, id: string, existing: Row, patch: PartPatch): PartPatch {
+  const changed: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(patch)) {
+    if (value === undefined) continue;
+    if (key === 'tags') {
+      const before = readPartTags(db, id).map((tag) => tag.toLowerCase()).sort();
+      const after = (value as string[]).map((tag) => tag.toLowerCase()).sort();
+      if (before.join('\u0000') !== after.join('\u0000')) changed[key] = value;
+    } else if ((existing[key] ?? null) !== (value ?? null)) {
+      changed[key] = value;
+    }
+  }
+  return changed as PartPatch;
+}
+
+export function updatePart(db: Database, id: string, fullPatch: PartPatch): PartRecord {
   const existing = requireLivePart(db, id);
   if (existing.is_current !== 1) {
     throw conflict('This is an old version. Open the current version to edit.');
   }
-  assertFieldsMatchKind(String(existing.kind), patch);
+  assertFieldsMatchKind(String(existing.kind), fullPatch);
+  const patch = withoutUnchanged(db, id, existing, fullPatch);
+  if (Object.keys(patch).length === 0) return getPart(db, id);
   assertReferences(db, {
     color_id: patch.color_id,
     location_id: patch.location_id,
