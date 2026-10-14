@@ -1,5 +1,5 @@
 import type { Database } from 'better-sqlite3';
-import { CATEGORIES } from '@shared/constants';
+import { CATEGORIES, CUSTOM_SOURCES, MATERIALS } from '@shared/constants';
 import type { ImportMapping, ImportTargetField } from '@shared/importSchemas';
 import type { PartInput } from '@shared/partSchemas';
 
@@ -87,9 +87,25 @@ export function normalizeRow(
       .map((tag) => tag.trim())
       .filter(Boolean),
   };
+  const dimension = (field: ImportTargetField): number | null => {
+    const number = Number(value(field));
+    return value(field) !== '' && number > 0 ? number : null;
+  };
+  const sourceText = value('source');
+  const materialText = value('material');
   const input: PartInput =
     kind === 'custom'
-      ? { kind: 'custom', ...shared, source: 'other' }
+      ? {
+          kind: 'custom',
+          ...shared,
+          source: CUSTOM_SOURCES.find((item) => item === sourceText) ?? 'other',
+          creator: value('creator') || null,
+          material: MATERIALS.find((item) => item === materialText) ?? null,
+          width_plates: dimension('width_plates'),
+          depth_plates: dimension('depth_plates'),
+          height_plates: dimension('height_plates'),
+          stud_pattern: value('stud_pattern') || null,
+        }
       : {
           kind: 'official',
           ...shared,

@@ -107,7 +107,13 @@ export class ActionRecorder {
 
   setTags(partId: string, names: string[]): void {
     const before = readPartTags(this.db, partId);
-    const unique = [...new Map(names.map((name) => [name.toLowerCase(), name])).values()];
+    const seen = new Set<string>();
+    const unique = names.filter((name) => {
+      const key = name.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
     this.db.prepare('DELETE FROM part_tags WHERE part_id = ?').run(partId);
     const link = this.db.prepare('INSERT INTO part_tags (part_id, tag_id) VALUES (?, ?)');
     for (const name of unique) link.run(partId, ensureTag(this.db, name, (c) => this.note(c)));

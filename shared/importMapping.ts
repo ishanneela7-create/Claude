@@ -14,6 +14,13 @@ const SYNONYMS: Record<ImportTargetField, string[]> = {
   rebrickable_part_num: ['rebrickablepartnum', 'rebrickable'],
   ldraw_id: ['ldraw', 'ldrawid'],
   year_introduced: ['year', 'yearintroduced', 'yearreleased'],
+  source: ['source'],
+  creator: ['creator', 'author', 'designer'],
+  material: ['material'],
+  width_plates: ['widthplates', 'width'],
+  depth_plates: ['depthplates', 'depth'],
+  height_plates: ['heightplates', 'height'],
+  stud_pattern: ['studpattern'],
 };
 
 function simplify(header: string): string {

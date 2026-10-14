@@ -5,7 +5,7 @@ import path from 'node:path';
 export default defineConfig({
   root: 'app',
   plugins: [react()],
-  resolve: { alias: { '@shared': path.resolve(__dirname, 'shared') } },
+  resolve: { alias: { '@shared': path.resolve(import.meta.dirname, 'shared') } },
   build: { outDir: '../dist', emptyOutDir: true },
   server: {
     port: 5173,

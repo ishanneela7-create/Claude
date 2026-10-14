@@ -15,6 +15,13 @@ export const IMPORT_TARGET_FIELDS = [
   'rebrickable_part_num',
   'ldraw_id',
   'year_introduced',
+  'source',
+  'creator',
+  'material',
+  'width_plates',
+  'depth_plates',
+  'height_plates',
+  'stud_pattern',
 ] as const;
 
 export type ImportTargetField = (typeof IMPORT_TARGET_FIELDS)[number];
