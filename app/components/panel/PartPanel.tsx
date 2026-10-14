@@ -65,7 +65,8 @@ export function PartPanel() {
     }
   };
 
-  const title = mode === 'new' ? `New ${newKind} part` : mode === 'edit' ? 'Edit part' : 'Part details';
+  const title =
+    mode === 'new' ? `New ${newKind} part` : mode === 'edit' ? 'Edit part' : 'Part details';
 
   return (
     <aside
@@ -86,7 +87,12 @@ export function PartPanel() {
             </a>
           )}
           {mode === 'view' && part && (
-            <button type="button" className="btn btn-danger" onClick={() => void remove()} aria-label="Delete part">
+            <button
+              type="button"
+              className="btn btn-danger"
+              onClick={() => void remove()}
+              aria-label="Delete part"
+            >
               <Icon name="trash" size={16} />
             </button>
           )}
@@ -101,7 +107,9 @@ export function PartPanel() {
             {error}
           </p>
         )}
-        {mode === 'new' && <PartForm key={`new-${newKind}`} part={null} kind={newKind} onDone={close} />}
+        {mode === 'new' && (
+          <PartForm key={`new-${newKind}`} part={null} kind={newKind} onDone={close} />
+        )}
         {mode === 'edit' && part && (
           <PartForm key={part.id} part={part} kind={part.kind} onDone={() => setMode('view')} />
         )}

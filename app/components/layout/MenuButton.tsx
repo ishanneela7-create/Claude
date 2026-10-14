@@ -17,7 +17,14 @@ interface MenuButtonProps {
 }
 
 /** A button that opens a small menu. Arrow keys move, Enter picks, Esc closes. */
-export function MenuButton({ label, icon, items, className = 'btn', children, align = 'right' }: MenuButtonProps) {
+export function MenuButton({
+  label,
+  icon,
+  items,
+  className = 'btn',
+  children,
+  align = 'right',
+}: MenuButtonProps) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const menuId = useId();
@@ -33,7 +40,9 @@ export function MenuButton({ label, icon, items, className = 'btn', children, al
   }, [open]);
 
   const onKeyDown = (event: React.KeyboardEvent) => {
-    const entries = [...(rootRef.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? [])];
+    const entries = [
+      ...(rootRef.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? []),
+    ];
     const index = entries.indexOf(document.activeElement as HTMLElement);
     if (event.key === 'Escape' && open) {
       event.stopPropagation();

@@ -21,7 +21,10 @@ export function ParentPartPicker({ id, value, onChange }: Props) {
       setCurrent(null);
       return;
     }
-    api.get<PartRecord>(`/parts/${value}`).then(setCurrent).catch(() => setCurrent(null));
+    api
+      .get<PartRecord>(`/parts/${value}`)
+      .then(setCurrent)
+      .catch(() => setCurrent(null));
   }, [value]);
 
   useEffect(() => {
@@ -48,7 +51,11 @@ export function ParentPartPicker({ id, value, onChange }: Props) {
           <span className="chip">
             {current.name} #{current.design_id} ({current.color_name})
           </span>
-          <button type="button" className="text-xs font-semibold text-danger hover:underline" onClick={() => onChange('')}>
+          <button
+            type="button"
+            className="text-xs font-semibold text-danger hover:underline"
+            onClick={() => onChange('')}
+          >
             Remove
           </button>
         </p>
@@ -62,7 +69,10 @@ export function ParentPartPicker({ id, value, onChange }: Props) {
         autoComplete="off"
       />
       {results.length > 0 && (
-        <ul className="mt-1 max-h-40 overflow-auto rounded-md border border-line" aria-label="Matching official parts">
+        <ul
+          className="mt-1 max-h-40 overflow-auto rounded-md border border-line"
+          aria-label="Matching official parts"
+        >
           {results.map((part) => (
             <li key={part.id}>
               <button

@@ -42,7 +42,8 @@ export default function ModelViewer({ object }: { object: Object3D }) {
     scene.add(light);
 
     object.traverse((child) => {
-      if (child instanceof Mesh) child.material = new MeshStandardMaterial({ color: 0x1256b8, roughness: 0.6 });
+      if (child instanceof Mesh)
+        child.material = new MeshStandardMaterial({ color: 0x1256b8, roughness: 0.6 });
     });
     scene.add(object);
     const box = new Box3().setFromObject(object);
@@ -71,7 +72,11 @@ export default function ModelViewer({ object }: { object: Object3D }) {
   }, [object]);
 
   if (failed) {
-    return <p className="text-sm text-muted">3D drawing is not available in this browser, but the size was still measured.</p>;
+    return (
+      <p className="text-sm text-muted">
+        3D drawing is not available in this browser, but the size was still measured.
+      </p>
+    );
   }
   return (
     <div

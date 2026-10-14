@@ -75,7 +75,9 @@ export function makeColumns(density: Density): ColumnDef<PartRecord>[] {
       id: 'quantity',
       header: 'Qty',
       meta: { width: '64px', sortField: 'quantity', minListWidth: 0, align: 'right' },
-      cell: ({ row }) => <span className="font-semibold tabular-nums">{row.original.quantity}</span>,
+      cell: ({ row }) => (
+        <span className="font-semibold tabular-nums">{row.original.quantity}</span>
+      ),
     },
     {
       id: 'location',

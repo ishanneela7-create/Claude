@@ -24,7 +24,9 @@ export function FilterChips() {
     const { sort: _sort, dir: _dir, ...filter } = params;
     void _sort;
     void _dir;
-    const clean = Object.fromEntries(Object.entries(filter).filter(([, value]) => value !== undefined));
+    const clean = Object.fromEntries(
+      Object.entries(filter).filter(([, value]) => value !== undefined),
+    );
     try {
       await api.post('/views', { name: name.trim(), filter: clean });
       setNaming(false);
@@ -41,7 +43,8 @@ export function FilterChips() {
   if (view) chips.push(`View: ${view.name}`);
   if (filters.category) chips.push(`Category: ${filters.category}`);
   if (filters.tag) chips.push(`Tag: ${filters.tag}`);
-  if (filters.location_id) chips.push(`Location: ${locationPath(locations, filters.location_id) || '…'}`);
+  if (filters.location_id)
+    chips.push(`Location: ${locationPath(locations, filters.location_id) || '…'}`);
   if (chips.length === 0 && !search) return null;
 
   return (
@@ -63,7 +66,11 @@ export function FilterChips() {
         <Icon name="close" size={14} /> Clear all
       </button>
       {!naming ? (
-        <button type="button" className="btn !min-h-[28px] px-2 text-xs" onClick={() => setNaming(true)}>
+        <button
+          type="button"
+          className="btn !min-h-[28px] px-2 text-xs"
+          onClick={() => setNaming(true)}
+        >
           Save as smart view
         </button>
       ) : (
@@ -77,8 +84,18 @@ export function FilterChips() {
           <label htmlFor="view-name" className="sr-only">
             Smart view name
           </label>
-          <input id="view-name" className="field !w-40 !py-1" value={name} onChange={(event) => setName(event.target.value)} placeholder="View name" />
-          <button type="submit" className="btn btn-accent !min-h-[28px] px-2 text-xs" disabled={!name.trim()}>
+          <input
+            id="view-name"
+            className="field !w-40 !py-1"
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            placeholder="View name"
+          />
+          <button
+            type="submit"
+            className="btn btn-accent !min-h-[28px] px-2 text-xs"
+            disabled={!name.trim()}
+          >
             Save
           </button>
         </form>

@@ -56,7 +56,10 @@ function step(db: Database, direction: 'undo' | 'redo'): HistoryEntry | null {
   const ordered = direction === 'undo' ? [...changes].reverse() : changes;
   for (const change of ordered) applyChange(db, change, direction);
   refreshIndexes(db, changes);
-  db.prepare('UPDATE history SET undone = ? WHERE id = ?').run(direction === 'undo' ? 1 : 0, row.id);
+  db.prepare('UPDATE history SET undone = ? WHERE id = ?').run(
+    direction === 'undo' ? 1 : 0,
+    row.id,
+  );
   return { id: row.id, label: row.label, undone: direction === 'undo', created_at: row.created_at };
 }
 

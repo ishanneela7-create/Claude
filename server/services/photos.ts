@@ -44,7 +44,9 @@ export async function addPhoto(
 ): Promise<PhotoRecord> {
   const part = requireLivePart(db, partId);
   const count = (
-    db.prepare('SELECT COUNT(*) AS n FROM part_photos WHERE part_id = ?').get(partId) as { n: number }
+    db.prepare('SELECT COUNT(*) AS n FROM part_photos WHERE part_id = ?').get(partId) as {
+      n: number;
+    }
   ).n;
   if (count >= MAX_PHOTOS_PER_PART) {
     throw conflict(`A part can have at most ${MAX_PHOTOS_PER_PART} photos`);

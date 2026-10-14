@@ -194,7 +194,10 @@ export function deleteLocation(db: Database, id: string, moveTo?: string): void 
       }
     }
     recorder.remove('locations', id);
-    reindexLocationParts(db, [...recorder.touchedLocationIds].filter((item) => item !== id));
+    reindexLocationParts(
+      db,
+      [...recorder.touchedLocationIds].filter((item) => item !== id),
+    );
     if (moveTo) reindexLocationParts(db, [moveTo]);
     recorder.commit(`Delete location ${location.name}`);
   })();

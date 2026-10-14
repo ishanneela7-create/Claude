@@ -18,8 +18,7 @@ export function listTags(db: Database): TagRecord[] {
 
 function getTag(db: Database, id: string): { id: string; name: string } {
   const tag = db.prepare('SELECT id, name FROM tags WHERE id = ?').get(id) as
-    | { id: string; name: string }
-    | undefined;
+    { id: string; name: string } | undefined;
   if (!tag) throw notFound('Tag');
   return tag;
 }

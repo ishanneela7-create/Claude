@@ -63,7 +63,12 @@ export function BulkDialog({ onClose }: { onClose(): void }) {
           <label htmlFor="bulk-location" className="label">
             Location
           </label>
-          <select id="bulk-location" className="field" value={location} onChange={(event) => setLocation(event.target.value)}>
+          <select
+            id="bulk-location"
+            className="field"
+            value={location}
+            onChange={(event) => setLocation(event.target.value)}
+          >
             <option value="__keep">Do not change</option>
             <option value="__none">Remove location</option>
             {flattenLocations(locations).map((node) => (
@@ -79,7 +84,12 @@ export function BulkDialog({ onClose }: { onClose(): void }) {
             <label htmlFor="bulk-qty-mode" className="label">
               Quantity
             </label>
-            <select id="bulk-qty-mode" className="field" value={quantityMode} onChange={(event) => setQuantityMode(event.target.value as typeof quantityMode)}>
+            <select
+              id="bulk-qty-mode"
+              className="field"
+              value={quantityMode}
+              onChange={(event) => setQuantityMode(event.target.value as typeof quantityMode)}
+            >
               <option value="keep">Do not change</option>
               <option value="set">Set to…</option>
               <option value="add">Add (use a minus to subtract)</option>
@@ -89,20 +99,37 @@ export function BulkDialog({ onClose }: { onClose(): void }) {
             <label htmlFor="bulk-qty" className="label">
               Amount
             </label>
-            <input id="bulk-qty" type="number" className="field" disabled={quantityMode === 'keep'} value={quantity} onChange={(event) => setQuantity(event.target.value)} />
+            <input
+              id="bulk-qty"
+              type="number"
+              className="field"
+              disabled={quantityMode === 'keep'}
+              value={quantity}
+              onChange={(event) => setQuantity(event.target.value)}
+            />
           </div>
         </div>
         <div>
           <label htmlFor="bulk-add-tags" className="label">
             Add tags (comma separated)
           </label>
-          <input id="bulk-add-tags" className="field" value={addTags} onChange={(event) => setAddTags(event.target.value)} />
+          <input
+            id="bulk-add-tags"
+            className="field"
+            value={addTags}
+            onChange={(event) => setAddTags(event.target.value)}
+          />
         </div>
         <div>
           <label htmlFor="bulk-remove-tags" className="label">
             Remove tags (comma separated)
           </label>
-          <input id="bulk-remove-tags" className="field" value={removeTags} onChange={(event) => setRemoveTags(event.target.value)} />
+          <input
+            id="bulk-remove-tags"
+            className="field"
+            value={removeTags}
+            onChange={(event) => setRemoveTags(event.target.value)}
+          />
         </div>
         <button type="submit" className="btn btn-primary" disabled={busy}>
           Apply to {selected.size.toLocaleString()} parts

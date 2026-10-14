@@ -18,8 +18,12 @@ seedColors(context.db, STARTER_COLORS);
 let started = performance.now();
 insertSyntheticParts(context.db, count);
 refreshStatistics(context.db);
-console.log(`Inserted ${count.toLocaleString()} parts + search index in ${((performance.now() - started) / 1000).toFixed(1)}s`);
-console.log(`Database size: ${(fs.statSync(path.join(dataDir, 'library.db')).size / 1e6).toFixed(1)} MB\n`);
+console.log(
+  `Inserted ${count.toLocaleString()} parts + search index in ${((performance.now() - started) / 1000).toFixed(1)}s`,
+);
+console.log(
+  `Database size: ${(fs.statSync(path.join(dataDir, 'library.db')).size / 1e6).toFixed(1)} MB\n`,
+);
 
 const server = createApp(context).listen(0);
 const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}/api`;
@@ -36,7 +40,10 @@ const cases: Case[] = [
   { label: 'Search: location (Drawer 3)', path: '/parts?q=Drawer%203&limit=100' },
   { label: 'Search: color:red cat:plates', path: '/parts?q=color:red%20cat:plates&limit=100' },
   { label: 'Search: qty:>150 custom:true', path: '/parts?q=qty:%3E150%20custom:true&limit=100' },
-  { label: 'Search: loc:"Room 2 > Cabinet 3"', path: '/parts?q=loc:%22Room%202%20%3E%20Cabinet%203%22&limit=100' },
+  {
+    label: 'Search: loc:"Room 2 > Cabinet 3"',
+    path: '/parts?q=loc:%22Room%202%20%3E%20Cabinet%203%22&limit=100',
+  },
   { label: 'Search: typo "brik" (fuzzy fallback)', path: '/parts?q=brik&limit=100' },
   { label: 'List: first page, sort name', path: '/parts?limit=100' },
   { label: 'List: sort by color', path: '/parts?sort=color&limit=100' },
@@ -49,7 +56,9 @@ const cases: Case[] = [
   { label: 'Duplicate scan', path: '/parts/duplicates' },
 ];
 
-const locationRow = context.db.prepare("SELECT id FROM locations WHERE path = 'Room 2 > Cabinet 3'").get() as { id: string };
+const locationRow = context.db
+  .prepare("SELECT id FROM locations WHERE path = 'Room 2 > Cabinet 3'")
+  .get() as { id: string };
 
 function percentile(sorted: number[], fraction: number): number {
   return sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * fraction))] ?? 0;
@@ -82,7 +91,9 @@ for (const item of cases) {
     `| ${item.label} | ${percentile(times, 0.5).toFixed(1)} | ${p95.toFixed(1)} | ${(times.at(-1) ?? 0).toFixed(1)} | ${results.toLocaleString()} |`,
   );
 }
-console.log(`\nSlowest search p95: ${slowest.toFixed(1)} ms (target: under 100 ms). ${slowest < 100 ? 'PASS' : 'FAIL'}`);
+console.log(
+  `\nSlowest search p95: ${slowest.toFixed(1)} ms (target: under 100 ms). ${slowest < 100 ? 'PASS' : 'FAIL'}`,
+);
 server.close();
 context.db.close();
 fs.rmSync(dataDir, { recursive: true, force: true });

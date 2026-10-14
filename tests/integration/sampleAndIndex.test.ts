@@ -8,7 +8,11 @@ import { createApp } from '../../server/app';
 import { createContext, refreshStatistics, type AppContext } from '../../server/db';
 import { seedSampleDataIfEmpty } from '../../server/sampleData';
 import { insertSyntheticParts } from '../../server/syntheticParts';
-import { rebuildSearchIndex, ensureSearchIndex, reindexParts } from '../../server/services/searchIndex';
+import {
+  rebuildSearchIndex,
+  ensureSearchIndex,
+  reindexParts,
+} from '../../server/services/searchIndex';
 import { STARTER_COLORS, seedColors } from '../../server/services/colorSeed';
 import { makeTestApp, officialBrick, type TestApp } from '../helpers/testApp';
 
@@ -41,7 +45,9 @@ describe('sample data', () => {
     const before = (context.db.prepare('SELECT COUNT(*) AS n FROM parts').get() as { n: number }).n;
     context.db.prepare('UPDATE parts SET deleted_at = ?').run(new Date().toISOString());
     await seedSampleDataIfEmpty(context.db);
-    expect((context.db.prepare('SELECT COUNT(*) AS n FROM parts').get() as { n: number }).n).toBe(before);
+    expect((context.db.prepare('SELECT COUNT(*) AS n FROM parts').get() as { n: number }).n).toBe(
+      before,
+    );
   });
 });
 
@@ -87,7 +93,11 @@ describe('speed guard (5,000 parts)', () => {
     insertSyntheticParts(context.db, 5000);
     refreshStatistics(context.db);
     const api = request(createApp(context));
-    for (const url of ['/api/parts?q=brick&limit=100', '/api/parts?q=color:red%20cat:plates', '/api/parts?offset=4000&limit=100']) {
+    for (const url of [
+      '/api/parts?q=brick&limit=100',
+      '/api/parts?q=color:red%20cat:plates',
+      '/api/parts?offset=4000&limit=100',
+    ]) {
       await api.get(url);
       const started = performance.now();
       const response = await api.get(url);
@@ -104,13 +114,36 @@ describe('error handling', () => {
   it('reports oversized and bad requests as clean errors', async () => {
     const app = makeTestApp();
     try {
-      const big = await app.api.post('/api/imports/preview').send({ format: 'csv', text: 'x'.repeat(81 * 1024 * 1024) });
+      const big = await app.api
+        .post('/api/imports/preview')
+        .send({ format: 'csv', text: 'x'.repeat(81 * 1024 * 1024) });
       expect(big.status).toBe(413);
       const bad = await app.api.get('/api/parts?limit=abc');
       expect(bad.status).toBe(400);
       expect(bad.body.error.code).toBe('validation_error');
     } finally {
       app.cleanup();
+    }
+  });
+});
+
+describe('NO_SAMPLE', () => {
+  it('starts a brand new library empty when asked', async () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'lego-nosample-'));
+    const context = createContext(dir);
+    process.env.NO_SAMPLE = '1';
+    try {
+      await seedSampleDataIfEmpty(context.db);
+      expect((context.db.prepare('SELECT COUNT(*) AS n FROM parts').get() as { n: number }).n).toBe(
+        0,
+      );
+      expect(
+        (context.db.prepare('SELECT COUNT(*) AS n FROM colors').get() as { n: number }).n,
+      ).toBeGreaterThan(0);
+    } finally {
+      delete process.env.NO_SAMPLE;
+      context.db.close();
+      fs.rmSync(dir, { recursive: true, force: true });
     }
   });
 });

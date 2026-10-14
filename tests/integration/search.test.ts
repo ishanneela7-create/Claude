@@ -14,13 +14,30 @@ beforeEach(async () => {
   app = makeTestApp();
   const drawer = await app.api.post('/api/locations').send({ name: 'Drawer 3' });
   drawerId = drawer.body.id;
-  await app.api.post('/api/parts').send(
-    officialBrick({ name: 'Brick 2 x 4', quantity: 10, tags: ['favorite'], location_id: drawerId }),
-  );
-  await app.api.post('/api/parts').send(
-    officialBrick({ name: 'Plate 1 x 2', category: 'Plates', design_id: '3023', color_id: 1, quantity: 3 }),
-  );
-  await app.api.post('/api/parts').send(customPart({ name: 'Printed Slope', category: 'Slopes', notes: 'rough surface' }));
+  await app.api
+    .post('/api/parts')
+    .send(
+      officialBrick({
+        name: 'Brick 2 x 4',
+        quantity: 10,
+        tags: ['favorite'],
+        location_id: drawerId,
+      }),
+    );
+  await app.api
+    .post('/api/parts')
+    .send(
+      officialBrick({
+        name: 'Plate 1 x 2',
+        category: 'Plates',
+        design_id: '3023',
+        color_id: 1,
+        quantity: 3,
+      }),
+    );
+  await app.api
+    .post('/api/parts')
+    .send(customPart({ name: 'Printed Slope', category: 'Slopes', notes: 'rough surface' }));
 });
 afterEach(() => app.cleanup());
 

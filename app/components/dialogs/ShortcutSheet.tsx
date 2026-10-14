@@ -26,7 +26,9 @@ export function ShortcutSheet({ onClose }: { onClose(): void }) {
         {SHORTCUTS.map(([key, text]) => (
           <div key={key} className="contents">
             <dt>
-              <kbd className="rounded border border-line bg-raised px-2 py-0.5 font-mono text-xs">{key}</kbd>
+              <kbd className="rounded border border-line bg-raised px-2 py-0.5 font-mono text-xs">
+                {key}
+              </kbd>
             </dt>
             <dd>{text}</dd>
           </div>

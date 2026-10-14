@@ -39,15 +39,16 @@ export function getColor(db: Database, id: number): ColorRecord {
 
 export function findColorByName(db: Database, name: string): ColorRecord | null {
   const row = db.prepare('SELECT * FROM colors WHERE name = ? COLLATE NOCASE').get(name) as
-    | ColorRow
-    | undefined;
+    ColorRow | undefined;
   return row ? toRecord(row) : null;
 }
 
 export function createCustomColor(db: Database, input: ColorInput): ColorRecord {
   if (findColorByName(db, input.name)) throw conflict('A color with this name already exists');
   const recorder = new ActionRecorder(db);
-  const next = db.prepare('SELECT COALESCE(MAX(id), 0) + 1 AS next FROM colors WHERE is_custom = 1').get() as {
+  const next = db
+    .prepare('SELECT COALESCE(MAX(id), 0) + 1 AS next FROM colors WHERE is_custom = 1')
+    .get() as {
     next: number;
   };
   const id = Math.max(CUSTOM_COLOR_ID_START, next.next);
@@ -71,7 +72,11 @@ function requireCustom(db: Database, id: number): ColorRecord {
   return color;
 }
 
-export function updateCustomColor(db: Database, id: number, patch: Partial<ColorInput>): ColorRecord {
+export function updateCustomColor(
+  db: Database,
+  id: number,
+  patch: Partial<ColorInput>,
+): ColorRecord {
   requireCustom(db, id);
   const recorder = new ActionRecorder(db);
   db.transaction(() => {

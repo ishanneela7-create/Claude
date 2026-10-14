@@ -26,7 +26,10 @@ export const IMPORT_TARGET_FIELDS = [
 
 export type ImportTargetField = (typeof IMPORT_TARGET_FIELDS)[number];
 
-export const importMappingSchema = z.record(z.string(), z.enum(IMPORT_TARGET_FIELDS).or(z.literal('')));
+export const importMappingSchema = z.record(
+  z.string(),
+  z.enum(IMPORT_TARGET_FIELDS).or(z.literal('')),
+);
 
 export const importPreviewSchema = z.object({
   format: z.enum(['csv', 'rebrickable']),

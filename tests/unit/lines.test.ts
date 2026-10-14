@@ -13,11 +13,13 @@ describe('buildLines', () => {
 
   it('packs cards into lines for the grid, with a shorter last line', () => {
     const lines = buildLines({ total: 7, groups: null, collapsed: new Set(), columns: 3 });
-    expect(lines.map((line) => (line.kind === 'cells' ? [line.start, line.length] : null))).toEqual([
-      [0, 3],
-      [3, 3],
-      [6, 1],
-    ]);
+    expect(lines.map((line) => (line.kind === 'cells' ? [line.start, line.length] : null))).toEqual(
+      [
+        [0, 3],
+        [3, 3],
+        [6, 1],
+      ],
+    );
   });
 
   it('adds group headers, and collapsed groups hide rows but keep row numbers right', () => {
@@ -26,7 +28,15 @@ describe('buildLines', () => {
       { key: 'Plates', count: 3 },
     ];
     const open = buildLines({ total: 5, groups, collapsed: new Set(), columns: 1 });
-    expect(open.map((line) => line.kind)).toEqual(['header', 'cells', 'cells', 'header', 'cells', 'cells', 'cells']);
+    expect(open.map((line) => line.kind)).toEqual([
+      'header',
+      'cells',
+      'cells',
+      'header',
+      'cells',
+      'cells',
+      'cells',
+    ]);
 
     const collapsed = buildLines({ total: 5, groups, collapsed: new Set(['Bricks']), columns: 1 });
     expect(collapsed).toEqual([
@@ -40,6 +50,8 @@ describe('buildLines', () => {
 
   it('copes with no rows and a column count below 1', () => {
     expect(buildLines({ total: 0, groups: null, collapsed: new Set(), columns: 2 })).toEqual([]);
-    expect(buildLines({ total: 2, groups: null, collapsed: new Set(), columns: 0 })).toHaveLength(2);
+    expect(buildLines({ total: 2, groups: null, collapsed: new Set(), columns: 0 })).toHaveLength(
+      2,
+    );
   });
 });

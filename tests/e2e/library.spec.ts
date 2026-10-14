@@ -12,10 +12,13 @@ test('shows sample data with swatches that screen readers can read', async ({ pa
   await expect(page.getByText(/^Color: /).first()).toBeAttached();
 });
 
-test('search operators filter the list as you type', async ({ page }) => {
+test('search operators filter the list as you type', async ({ page, request }) => {
   const search = page.getByLabel('Search parts');
+  const customCount = (
+    (await (await request.get('/api/parts?kind=custom')).json()) as { total: number }
+  ).total;
   await search.fill('custom:true');
-  await expect(page.getByText('5 parts')).toBeVisible();
+  await expect(page.getByText(`${customCount} parts`, { exact: true })).toBeVisible();
   await search.fill('color:red cat:bricks');
   await expect(page.getByRole('button', { name: /Open Brick 2 x 4, Red/ }).first()).toBeVisible();
   await search.fill('zzzzzzzz');
@@ -41,9 +44,12 @@ test('groups parts and collapses a group', async ({ page }) => {
   await page.getByLabel('Group by').selectOption('');
 });
 
-test('smart views filter the list', async ({ page }) => {
+test('smart views filter the list', async ({ page, request }) => {
+  const customCount = (
+    (await (await request.get('/api/parts?kind=custom')).json()) as { total: number }
+  ).total;
   await page.getByRole('button', { name: 'Custom parts' }).click();
-  await expect(page.getByText('5 parts')).toBeVisible();
+  await expect(page.getByText(`${customCount} parts`, { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Clear all' }).click();
 });
 

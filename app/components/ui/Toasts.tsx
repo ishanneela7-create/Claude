@@ -21,7 +21,11 @@ export function Toasts() {
           className={`pointer-events-auto flex items-start justify-between gap-3 rounded-md border-l-4 bg-surface px-3 py-2 text-sm shadow-lg ring-1 ring-line ${STYLE[toast.kind]}`}
         >
           <span>{toast.text}</span>
-          <button type="button" className="font-semibold text-muted hover:text-ink" onClick={() => dismiss(toast.id)}>
+          <button
+            type="button"
+            className="font-semibold text-muted hover:text-ink"
+            onClick={() => dismiss(toast.id)}
+          >
             Dismiss
           </button>
         </div>

@@ -53,6 +53,7 @@ export function importCustomPart(db: Database, payload: unknown): PartRecord {
     quantity: typeof file.part.quantity === 'number' ? file.part.quantity : 0,
   };
   const input = partInputSchema.safeParse(candidate);
-  if (!input.success) throw badRequest('The file does not hold a valid custom part', input.error.issues);
+  if (!input.success)
+    throw badRequest('The file does not hold a valid custom part', input.error.issues);
   return createPart(db, input.data);
 }

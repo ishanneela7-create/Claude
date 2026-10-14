@@ -22,7 +22,9 @@ describe('guessMapping', () => {
 describe('Rebrickable detection', () => {
   it('recognizes both export styles', () => {
     expect(looksLikeRebrickable(['Part', 'Color', 'Quantity'])).toBe(true);
-    expect(looksLikeRebrickable(['inventory_id', 'part_num', 'color_id', 'quantity', 'is_spare'])).toBe(true);
+    expect(
+      looksLikeRebrickable(['inventory_id', 'part_num', 'color_id', 'quantity', 'is_spare']),
+    ).toBe(true);
     expect(looksLikeRebrickable(['name', 'qty'])).toBe(false);
   });
 

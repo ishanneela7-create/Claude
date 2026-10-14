@@ -1,5 +1,14 @@
+import { useRef } from 'react';
 import { GROUP_FIELDS, SORT_FIELDS } from '@shared/constants';
-import { useUiStore, type Density, type GroupField, type SortField, type ThemeSetting } from '../../store/uiStore';
+import type { PartRecord } from '@shared/types';
+import { api, describeError } from '../../lib/api';
+import {
+  useUiStore,
+  type Density,
+  type GroupField,
+  type SortField,
+  type ThemeSetting,
+} from '../../store/uiStore';
 import { useDataStore } from '../../store/dataStore';
 import { Icon } from '../ui/Icon';
 import { MenuButton } from './MenuButton';
@@ -19,7 +28,11 @@ const GROUP_LABELS: Record<GroupField, string> = {
   kind: 'Official / custom',
   subcategory: 'Subcategory',
 };
-const NEXT_THEME: Record<ThemeSetting, ThemeSetting> = { system: 'light', light: 'dark', dark: 'system' };
+const NEXT_THEME: Record<ThemeSetting, ThemeSetting> = {
+  system: 'light',
+  light: 'dark',
+  dark: 'system',
+};
 
 export function Toolbar() {
   const ui = useUiStore();
@@ -29,6 +42,28 @@ export function Toolbar() {
   const canUndo = history.some((entry) => !entry.undone);
   const canRedo = history.some((entry) => entry.undone);
   const lastAction = history.find((entry) => !entry.undone)?.label;
+  const fileInput = useRef<HTMLInputElement>(null);
+  const bump = useDataStore((state) => state.bump);
+  const toast = useDataStore((state) => state.toast);
+
+  /** Reads a shared custom part file and adds it as a new part. */
+  const importCustomFile = async (file: File | undefined) => {
+    if (!file) return;
+    try {
+      const part = await api.post<PartRecord>(
+        '/parts/import-custom',
+        JSON.parse(await file.text()),
+      );
+      await bump();
+      ui.openPart(part.id);
+      toast('success', `Imported custom part "${part.name}"`);
+    } catch (error) {
+      toast(
+        'error',
+        error instanceof SyntaxError ? 'That file is not valid JSON' : describeError(error),
+      );
+    }
+  };
 
   return (
     <header className="flex flex-wrap items-center gap-2 border-b border-line bg-surface px-3 py-2">
@@ -123,7 +158,11 @@ export function Toolbar() {
       <button
         type="button"
         className="btn-icon"
-        aria-label={ui.dir === 'asc' ? 'Sorted ascending, switch to descending' : 'Sorted descending, switch to ascending'}
+        aria-label={
+          ui.dir === 'asc'
+            ? 'Sorted ascending, switch to descending'
+            : 'Sorted descending, switch to ascending'
+        }
         onClick={() => ui.setSort(ui.sort, ui.dir === 'asc' ? 'desc' : 'asc')}
       >
         <Icon name="down" className={ui.dir === 'asc' ? 'rotate-180' : ''} />
@@ -146,10 +185,22 @@ export function Toolbar() {
         ))}
       </select>
 
-      <button type="button" className="btn-icon" aria-label={canUndo ? `Undo: ${lastAction ?? ''}` : 'Undo (nothing to undo)'} disabled={!canUndo} onClick={() => void undo()}>
+      <button
+        type="button"
+        className="btn-icon"
+        aria-label={canUndo ? `Undo: ${lastAction ?? ''}` : 'Undo (nothing to undo)'}
+        disabled={!canUndo}
+        onClick={() => void undo()}
+      >
         <Icon name="undo" />
       </button>
-      <button type="button" className="btn-icon" aria-label="Redo" disabled={!canRedo} onClick={() => void redo()}>
+      <button
+        type="button"
+        className="btn-icon"
+        aria-label="Redo"
+        disabled={!canRedo}
+        onClick={() => void redo()}
+      >
         <Icon name="redo" />
       </button>
       <button
@@ -167,9 +218,22 @@ export function Toolbar() {
         className="btn-icon"
         items={[
           { label: 'Import…', icon: 'upload', onSelect: () => ui.openDialog('import') },
+          {
+            label: 'Import custom part file…',
+            icon: 'upload',
+            onSelect: () => fileInput.current?.click(),
+          },
           { label: 'Export CSV', icon: 'download', onSelect: () => window.open('/api/export/csv') },
-          { label: 'Export JSON', icon: 'download', onSelect: () => window.open('/api/export/json') },
-          { label: 'Download SQLite backup', icon: 'download', onSelect: () => window.open('/api/export/sqlite') },
+          {
+            label: 'Export JSON',
+            icon: 'download',
+            onSelect: () => window.open('/api/export/json'),
+          },
+          {
+            label: 'Download SQLite backup',
+            icon: 'download',
+            onSelect: () => window.open('/api/export/sqlite'),
+          },
           { label: 'Find duplicates', icon: 'copy', onSelect: () => ui.openDialog('duplicates') },
           { label: 'Manage colors', icon: 'star', onSelect: () => ui.openDialog('colors') },
           { label: 'Keyboard shortcuts', icon: 'help', onSelect: () => ui.openDialog('shortcuts') },
@@ -177,6 +241,18 @@ export function Toolbar() {
       >
         <span className="sr-only">More actions</span>
       </MenuButton>
+      <input
+        ref={fileInput}
+        type="file"
+        accept=".json,application/json"
+        className="sr-only"
+        tabIndex={-1}
+        aria-label="Custom part file"
+        onChange={(event) => {
+          void importCustomFile(event.target.files?.[0]);
+          event.target.value = '';
+        }}
+      />
     </header>
   );
 }

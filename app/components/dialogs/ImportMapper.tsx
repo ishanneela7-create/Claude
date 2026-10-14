@@ -55,7 +55,10 @@ export function ImportMapper({ preview, mapping, onMappingChange }: Props) {
                 className="field"
                 value={mapping[header] ?? ''}
                 onChange={(event) =>
-                  onMappingChange({ ...mapping, [header]: event.target.value as ImportMapping[string] })
+                  onMappingChange({
+                    ...mapping,
+                    [header]: event.target.value as ImportMapping[string],
+                  })
                 }
               >
                 <option value="">Skip this column</option>
@@ -73,7 +76,8 @@ export function ImportMapper({ preview, mapping, onMappingChange }: Props) {
       <section aria-label="Preview">
         <h3 className="mb-1 font-semibold">2. Check the first {preview.sample.length} rows</h3>
         <p className="mb-2 text-sm" aria-live="polite">
-          {preview.valid_rows.toLocaleString()} of {preview.total_rows.toLocaleString()} rows are ready to import.
+          {preview.valid_rows.toLocaleString()} of {preview.total_rows.toLocaleString()} rows are
+          ready to import.
           {preview.total_rows - preview.valid_rows > 0 &&
             ` ${(preview.total_rows - preview.valid_rows).toLocaleString()} rows have problems and will be skipped.`}
         </p>
@@ -94,7 +98,13 @@ export function ImportMapper({ preview, mapping, onMappingChange }: Props) {
             <tbody>
               {preview.sample.map((row, index) => (
                 <tr key={index} className={row.error ? 'bg-danger/10' : ''}>
-                  <td className="p-2 font-semibold">{row.error ? <span className="text-danger">{row.error}</span> : <span className="text-accent">{row.result}</span>}</td>
+                  <td className="p-2 font-semibold">
+                    {row.error ? (
+                      <span className="text-danger">{row.error}</span>
+                    ) : (
+                      <span className="text-accent">{row.result}</span>
+                    )}
+                  </td>
                   {preview.headers.map((header, column) => (
                     <td key={`${header}-${column}`} className="p-2">
                       {row.cells[column]}

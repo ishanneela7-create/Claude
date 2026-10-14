@@ -3,12 +3,7 @@ import multer from 'multer';
 import { z } from 'zod';
 import { GROUP_FIELDS, MAX_PHOTOS_PER_PART } from '@shared/constants';
 import { idParamSchema } from '@shared/otherSchemas';
-import {
-  bulkEditSchema,
-  mergeSchema,
-  partInputSchema,
-  partPatchSchema,
-} from '@shared/partSchemas';
+import { bulkEditSchema, mergeSchema, partInputSchema, partPatchSchema } from '@shared/partSchemas';
 import { partFilterSchema, partListQuerySchema } from '@shared/querySchemas';
 import type { AppContext } from '../db';
 import { badRequest, parse } from '../http';
@@ -97,7 +92,8 @@ export function partsRouter({ db, photosDir }: AppContext): Router {
 
   router.post('/parts/:id/photos', photoUpload.single('photo'), async (request, response) => {
     const { id } = parse(idParamSchema, request.params);
-    if (!request.file) throw badRequest(`Send one image in the "photo" field (max ${MAX_PHOTOS_PER_PART} per part)`);
+    if (!request.file)
+      throw badRequest(`Send one image in the "photo" field (max ${MAX_PHOTOS_PER_PART} per part)`);
     response.status(201).json(await addPhoto(db, photosDir, id, request.file.buffer));
   });
 

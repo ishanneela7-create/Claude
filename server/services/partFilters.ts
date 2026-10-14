@@ -60,7 +60,8 @@ export function buildFilter(filter: PartFilter, termsOverride?: string[]): Built
     clauses.push(`p.quantity ${parsed.quantity.operator} ?`);
     params.push(parsed.quantity.value);
   }
-  if (parsed.custom !== undefined) clauses.push(`p.kind = '${parsed.custom ? 'custom' : 'official'}'`);
+  if (parsed.custom !== undefined)
+    clauses.push(`p.kind = '${parsed.custom ? 'custom' : 'official'}'`);
 
   if (filter.kind) {
     clauses.push('p.kind = ?');

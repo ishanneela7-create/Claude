@@ -4,9 +4,41 @@ import { ActionRecorder } from './recorder';
 import { ensureLocationPath } from './services/importer';
 import { rebuildSearchIndex } from './services/searchIndex';
 
-const SHAPES = ['Brick', 'Plate', 'Tile', 'Slope', 'Technic Beam', 'Wheel', 'Round Brick', 'Arch', 'Panel'];
-const SIZES = ['1 x 1', '1 x 2', '1 x 4', '2 x 2', '2 x 3', '2 x 4', '2 x 6', '4 x 4', '6 x 6', '8 x 8'];
-const WORDS = ['smooth', 'studded', 'worn', 'new', 'rare', 'bulk', 'sorted', 'mixed', 'spare', 'broken'];
+const SHAPES = [
+  'Brick',
+  'Plate',
+  'Tile',
+  'Slope',
+  'Technic Beam',
+  'Wheel',
+  'Round Brick',
+  'Arch',
+  'Panel',
+];
+const SIZES = [
+  '1 x 1',
+  '1 x 2',
+  '1 x 4',
+  '2 x 2',
+  '2 x 3',
+  '2 x 4',
+  '2 x 6',
+  '4 x 4',
+  '6 x 6',
+  '8 x 8',
+];
+const WORDS = [
+  'smooth',
+  'studded',
+  'worn',
+  'new',
+  'rare',
+  'bulk',
+  'sorted',
+  'mixed',
+  'spare',
+  'broken',
+];
 const TAGS = Array.from({ length: 24 }, (_, index) => `tag-${index}`);
 
 function makeRandom(seed: number): () => number {
@@ -24,7 +56,9 @@ function makeRandom(seed: number): () => number {
 export function insertSyntheticParts(db: Database, count: number, customShare = 0.05): number {
   const random = makeRandom(7);
   const pick = <T>(list: readonly T[]): T => list[Math.floor(random() * list.length)] as T;
-  const colorIds = (db.prepare('SELECT id FROM colors').all() as { id: number }[]).map((row) => row.id);
+  const colorIds = (db.prepare('SELECT id FROM colors').all() as { id: number }[]).map(
+    (row) => row.id,
+  );
   const recorder = new ActionRecorder(db, false);
   const cache = new Map<string, string>();
   const locationIds: string[] = [];
@@ -34,7 +68,11 @@ export function insertSyntheticParts(db: Database, count: number, customShare = 
         for (let drawer = 1; drawer <= 5; drawer++) {
           for (let bin = 1; bin <= 4; bin++) {
             locationIds.push(
-              ensureLocationPath(recorder, `Room ${room} > Cabinet ${cabinet} > Drawer ${drawer} > Bin ${bin}`, cache),
+              ensureLocationPath(
+                recorder,
+                `Room ${room} > Cabinet ${cabinet} > Drawer ${drawer} > Bin ${bin}`,
+                cache,
+              ),
             );
           }
         }

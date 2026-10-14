@@ -15,9 +15,11 @@ beforeEach(() => {
 afterEach(() => fs.rmSync(dir, { recursive: true, force: true }));
 
 const tableNames = (db: ReturnType<typeof openDatabase>) =>
-  (db.prepare("SELECT name FROM sqlite_master WHERE type IN ('table','index') ORDER BY name").all() as { name: string }[]).map(
-    (row) => row.name,
-  );
+  (
+    db
+      .prepare("SELECT name FROM sqlite_master WHERE type IN ('table','index') ORDER BY name")
+      .all() as { name: string }[]
+  ).map((row) => row.name);
 
 describe('migrations', () => {
   it('apply in order, once, and are recorded', () => {
@@ -25,7 +27,9 @@ describe('migrations', () => {
     expect(migrateUp(db, file)).toEqual(MIGRATIONS.map((migration) => migration.version));
     expect(migrateUp(db, file)).toEqual([]);
     expect(appliedVersions(db)).toEqual(MIGRATIONS.map((migration) => migration.version));
-    expect(tableNames(db)).toEqual(expect.arrayContaining(['parts', 'colors', 'locations', 'tags', 'parts_search']));
+    expect(tableNames(db)).toEqual(
+      expect.arrayContaining(['parts', 'colors', 'locations', 'tags', 'parts_search']),
+    );
     db.close();
   });
 
@@ -37,7 +41,9 @@ describe('migrations', () => {
     expect(tableNames(db)).not.toContain('parts_search_vocab');
     migrateDown(db, file, 10);
     expect(appliedVersions(db)).toEqual([]);
-    expect(tableNames(db).filter((name) => !name.startsWith('sqlite_') && name !== 'schema_migrations')).toEqual([]);
+    expect(
+      tableNames(db).filter((name) => !name.startsWith('sqlite_') && name !== 'schema_migrations'),
+    ).toEqual([]);
     migrateUp(db, file);
     expect(tableNames(db)).toEqual(full);
     db.close();

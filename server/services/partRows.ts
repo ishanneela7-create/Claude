@@ -55,8 +55,7 @@ export function toPartRecords(db: Database, rows: RawPartRow[]): PartRecord[] {
 
 export function getPartRecord(db: Database, id: string): PartRecord | null {
   const row = db.prepare(`${PART_SELECT} WHERE p.id = ? AND p.deleted_at IS NULL`).get(id) as
-    | RawPartRow
-    | undefined;
+    RawPartRow | undefined;
   if (!row) return null;
   return toPartRecords(db, [row])[0] ?? null;
 }

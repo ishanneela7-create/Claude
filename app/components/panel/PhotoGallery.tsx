@@ -46,8 +46,18 @@ export function PhotoGallery({ partId, photos, editable }: Props) {
   return (
     <section aria-label="Photos" className="space-y-2">
       {current ? (
-        <a href={current.url} target="_blank" rel="noreferrer" aria-label="Open the full size photo">
-          <img src={current.url} alt={`Photo ${photos.indexOf(current) + 1} of ${photos.length}`} loading="lazy" className="max-h-64 w-full rounded-md border border-line object-contain" />
+        <a
+          href={current.url}
+          target="_blank"
+          rel="noreferrer"
+          aria-label="Open the full size photo"
+        >
+          <img
+            src={current.url}
+            alt={`Photo ${photos.indexOf(current) + 1} of ${photos.length}`}
+            loading="lazy"
+            className="max-h-64 w-full rounded-md border border-line object-contain"
+          />
         </a>
       ) : (
         <p className="text-sm text-muted">No photos yet.</p>
@@ -63,7 +73,12 @@ export function PhotoGallery({ partId, photos, editable }: Props) {
                 aria-pressed={index === selected}
                 onClick={() => setSelected(index)}
               >
-                <img src={photo.thumb_url} alt="" loading="lazy" className="h-12 w-12 rounded object-cover" />
+                <img
+                  src={photo.thumb_url}
+                  alt=""
+                  loading="lazy"
+                  className="h-12 w-12 rounded object-cover"
+                />
               </button>
             </li>
           ))}
@@ -72,11 +87,21 @@ export function PhotoGallery({ partId, photos, editable }: Props) {
       {editable && (
         <>
           {current && (
-            <button type="button" className="btn btn-danger" onClick={() => void remove(current.id)}>
+            <button
+              type="button"
+              className="btn btn-danger"
+              onClick={() => void remove(current.id)}
+            >
               <Icon name="trash" size={16} /> Remove this photo
             </button>
           )}
-          <PhotoPicker files={[]} onChange={() => undefined} existing={photos.length} label="Add photos" onAddNow={(files) => void addNow(files)} />
+          <PhotoPicker
+            files={[]}
+            onChange={() => undefined}
+            existing={photos.length}
+            label="Add photos"
+            onAddNow={(files) => void addNow(files)}
+          />
         </>
       )}
     </section>

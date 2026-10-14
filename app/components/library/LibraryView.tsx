@@ -20,13 +20,21 @@ export function LibraryView() {
   const group = useUiStore((state) => state.group);
   const collapsed = useUiStore((state) => state.collapsedGroups);
   const toggleGroup = useUiStore((state) => state.toggleGroup);
+  const clearSelection = useUiStore((state) => state.clearSelection);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const width = useElementWidth(scrollRef);
   const paged = usePagedParts(params, group);
 
+  /* Ticked parts belong to the list you ticked them in: a new search or filter starts a new selection. */
+  const filterKey = JSON.stringify({ ...params, sort: undefined, dir: undefined });
+  useEffect(() => {
+    clearSelection();
+  }, [filterKey, clearSelection]);
+
   const card = CARD_SIZE[density];
-  const columns = viewMode === 'grid' ? Math.max(1, Math.floor((width + GRID_GAP) / (card.width + GRID_GAP))) : 1;
+  const columns =
+    viewMode === 'grid' ? Math.max(1, Math.floor((width + GRID_GAP) / (card.width + GRID_GAP))) : 1;
   const rowHeight = viewMode === 'grid' ? card.height + GRID_GAP : ROW_HEIGHT[density];
 
   const groupsReady = group === null || paged.groups !== null;
@@ -77,7 +85,8 @@ export function LibraryView() {
         {paged.corrections && (
           <p role="status" className="border-b border-line bg-brand/10 px-3 py-2 text-sm">
             Nothing matched what you typed, so these are results for{' '}
-            {paged.corrections.map((item) => `“${item.to}” (instead of “${item.from}”)`).join(', ')}.
+            {paged.corrections.map((item) => `“${item.to}” (instead of “${item.from}”)`).join(', ')}
+            .
           </p>
         )}
         {paged.error && (
@@ -134,7 +143,13 @@ export function LibraryView() {
             return (
               <div
                 key={`c-${line.start}`}
-                style={{ ...style, display: 'grid', gridTemplateColumns: `repeat(${columns}, 1fr)`, gap: GRID_GAP, padding: `0 ${GRID_GAP}px` }}
+                style={{
+                  ...style,
+                  display: 'grid',
+                  gridTemplateColumns: `repeat(${columns}, 1fr)`,
+                  gap: GRID_GAP,
+                  padding: `0 ${GRID_GAP}px`,
+                }}
                 role="listitem"
               >
                 {Array.from({ length: line.length }, (_, offset) => (

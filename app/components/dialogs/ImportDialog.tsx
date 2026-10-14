@@ -49,10 +49,10 @@ export function ImportDialog({ onClose }: { onClose(): void }) {
   const commit = async () => {
     setBusy(true);
     try {
-      const result = await api.post<{ import: { created_count: number; updated_count: number }; errors: unknown[] }>(
-        '/imports',
-        { format, text, source_name: fileName, mapping },
-      );
+      const result = await api.post<{
+        import: { created_count: number; updated_count: number };
+        errors: unknown[];
+      }>('/imports', { format, text, source_name: fileName, mapping });
       await bump();
       toast(
         'success',
@@ -104,7 +104,13 @@ export function ImportDialog({ onClose }: { onClose(): void }) {
           <label htmlFor="import-file" className="label">
             Choose a .csv file
           </label>
-          <input id="import-file" type="file" accept=".csv,text/csv" className="field" onChange={(event) => void onFile(event.target.files?.[0])} />
+          <input
+            id="import-file"
+            type="file"
+            accept=".csv,text/csv"
+            className="field"
+            onChange={(event) => void onFile(event.target.files?.[0])}
+          />
         </div>
 
         {busy && <p className="text-sm text-muted">Working…</p>}
@@ -125,7 +131,12 @@ export function ImportDialog({ onClose }: { onClose(): void }) {
               }}
             />
             <div className="flex gap-2">
-              <button type="button" className="btn btn-accent" disabled={busy || preview.valid_rows === 0} onClick={() => void commit()}>
+              <button
+                type="button"
+                className="btn btn-accent"
+                disabled={busy || preview.valid_rows === 0}
+                onClick={() => void commit()}
+              >
                 Import {preview.valid_rows.toLocaleString()} rows
               </button>
               <button type="button" className="btn" onClick={() => setPreview(null)}>

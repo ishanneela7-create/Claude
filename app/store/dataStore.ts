@@ -95,8 +95,14 @@ export const useDataStore = create<DataState>((set, get) => ({
   },
 }));
 
-export function flattenLocations(nodes: LocationNode[], depth = 0): Array<LocationNode & { depth: number }> {
-  return nodes.flatMap((node) => [{ ...node, depth }, ...flattenLocations(node.children, depth + 1)]);
+export function flattenLocations(
+  nodes: LocationNode[],
+  depth = 0,
+): Array<LocationNode & { depth: number }> {
+  return nodes.flatMap((node) => [
+    { ...node, depth },
+    ...flattenLocations(node.children, depth + 1),
+  ]);
 }
 
 export function locationPath(nodes: LocationNode[], id: string | null): string {

@@ -67,7 +67,9 @@ export function insertSampleLibrary(db: Database): void {
   const pick = <T>(list: T[]): T => list[Math.floor(random() * list.length)] as T;
   const recorder = new ActionRecorder(db, false);
   const locationCache = new Map<string, string>();
-  const locationIds = LOCATION_PATHS.map((path) => ensureLocationPath(recorder, path, locationCache));
+  const locationIds = LOCATION_PATHS.map((path) =>
+    ensureLocationPath(recorder, path, locationCache),
+  );
 
   db.transaction(() => {
     for (const [designId, name, category] of OFFICIAL_SAMPLES) {
@@ -137,5 +139,5 @@ export async function seedSampleDataIfEmpty(db: Database): Promise<void> {
   if (colors.n === 0) seedColors(db, STARTER_COLORS);
   const parts = db.prepare('SELECT COUNT(*) AS n FROM parts').get() as { n: number };
   const locations = db.prepare('SELECT COUNT(*) AS n FROM locations').get() as { n: number };
-  if (parts.n === 0 && locations.n === 0) insertSampleLibrary(db);
+  if (parts.n === 0 && locations.n === 0 && process.env.NO_SAMPLE !== '1') insertSampleLibrary(db);
 }

@@ -2,7 +2,17 @@ import type { ImportMapping, ImportTargetField } from './importSchemas';
 
 const SYNONYMS: Record<ImportTargetField, string[]> = {
   name: ['name', 'partname', 'description', 'partdescription', 'title'],
-  design_id: ['designid', 'designno', 'designnumber', 'part', 'partnum', 'partnumber', 'partno', 'partid', 'itemno'],
+  design_id: [
+    'designid',
+    'designno',
+    'designnumber',
+    'part',
+    'partnum',
+    'partnumber',
+    'partno',
+    'partid',
+    'itemno',
+  ],
   category: ['category', 'partcategory', 'type'],
   subcategory: ['subcategory', 'subtype'],
   color: ['color', 'colour', 'colorname', 'colourname', 'colorid', 'colourid'],

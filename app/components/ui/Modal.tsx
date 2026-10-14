@@ -8,7 +8,8 @@ interface ModalProps {
   wide?: boolean;
 }
 
-const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]),select,textarea,[tabindex]:not([tabindex="-1"])';
+const FOCUSABLE =
+  'a[href],button:not([disabled]),input:not([disabled]),select,textarea,[tabindex]:not([tabindex="-1"])';
 
 /** A dialog that traps the keyboard focus and closes with Esc. */
 export function Modal({ title, onClose, children, wide = false }: ModalProps) {

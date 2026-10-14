@@ -9,8 +9,12 @@ afterEach(() => app.cleanup());
 
 describe('duplicates and merge', () => {
   it('finds parts with the same design id and color, and merges them', async () => {
-    const first = await app.api.post('/api/parts').send(officialBrick({ quantity: 4, tags: ['a'], notes: 'one' }));
-    const second = await app.api.post('/api/parts').send(officialBrick({ quantity: 6, tags: ['b'], notes: 'two' }));
+    const first = await app.api
+      .post('/api/parts')
+      .send(officialBrick({ quantity: 4, tags: ['a'], notes: 'one' }));
+    const second = await app.api
+      .post('/api/parts')
+      .send(officialBrick({ quantity: 6, tags: ['b'], notes: 'two' }));
     await app.api.post('/api/parts').send(officialBrick({ color_id: 1 }));
     const groups = await app.api.get('/api/parts/duplicates');
     expect(groups.body).toHaveLength(1);
@@ -34,11 +38,17 @@ describe('duplicates and merge', () => {
     const a = await app.api.post('/api/parts').send(officialBrick());
     const b = await app.api.post('/api/parts').send(officialBrick({ color_id: 1 }));
     const c = await app.api.post('/api/parts').send(customPart());
-    const different = await app.api.post('/api/parts/merge').send({ keep_id: a.body.id, merge_ids: [b.body.id] });
+    const different = await app.api
+      .post('/api/parts/merge')
+      .send({ keep_id: a.body.id, merge_ids: [b.body.id] });
     expect(different.status).toBe(400);
-    const custom = await app.api.post('/api/parts/merge').send({ keep_id: a.body.id, merge_ids: [c.body.id] });
+    const custom = await app.api
+      .post('/api/parts/merge')
+      .send({ keep_id: a.body.id, merge_ids: [c.body.id] });
     expect(custom.status).toBe(400);
-    const self = await app.api.post('/api/parts/merge').send({ keep_id: a.body.id, merge_ids: [a.body.id] });
+    const self = await app.api
+      .post('/api/parts/merge')
+      .send({ keep_id: a.body.id, merge_ids: [a.body.id] });
     expect(self.status).toBe(400);
   });
 });
@@ -47,7 +57,9 @@ describe('bulk edit', () => {
   it('changes location, quantity and tags for many parts in one undoable step', async () => {
     const bin = (await app.api.post('/api/locations').send({ name: 'Bin' })).body;
     const a = (await app.api.post('/api/parts').send(officialBrick({ tags: ['old'] }))).body;
-    const b = (await app.api.post('/api/parts').send(officialBrick({ design_id: '3002', quantity: 3 }))).body;
+    const b = (
+      await app.api.post('/api/parts').send(officialBrick({ design_id: '3002', quantity: 3 }))
+    ).body;
 
     const moved = await app.api.post('/api/parts/bulk').send({
       ids: [a.id, b.id],
@@ -61,7 +73,9 @@ describe('bulk edit', () => {
     expect(parts.every((part) => part.location_id === bin.id)).toBe(true);
     expect(parts.map((part) => part.tags)).toEqual([['batch'], ['batch']]);
 
-    await app.api.post('/api/parts/bulk').send({ ids: [a.id, b.id], changes: { quantity_delta: -5 } });
+    await app.api
+      .post('/api/parts/bulk')
+      .send({ ids: [a.id, b.id], changes: { quantity_delta: -5 } });
     const after = (await app.api.get(`/api/parts/${b.id}`)).body;
     expect(after.quantity).toBe(0);
     await app.api.post('/api/parts/bulk').send({ ids: [a.id], changes: { quantity: 77 } });
@@ -74,16 +88,29 @@ describe('bulk edit', () => {
 
   it('validates the request', async () => {
     const part = (await app.api.post('/api/parts').send(officialBrick())).body;
-    expect((await app.api.post('/api/parts/bulk').send({ ids: [], changes: { quantity: 1 } })).status).toBe(400);
-    expect((await app.api.post('/api/parts/bulk').send({ ids: [part.id], changes: {} })).status).toBe(400);
     expect(
-      (await app.api.post('/api/parts/bulk').send({ ids: [part.id], changes: { location_id: 'nope' } })).status,
+      (await app.api.post('/api/parts/bulk').send({ ids: [], changes: { quantity: 1 } })).status,
     ).toBe(400);
     expect(
-      (await app.api.post('/api/parts/bulk').send({ ids: ['nope'], changes: { quantity: 1 } })).status,
+      (await app.api.post('/api/parts/bulk').send({ ids: [part.id], changes: {} })).status,
+    ).toBe(400);
+    expect(
+      (
+        await app.api
+          .post('/api/parts/bulk')
+          .send({ ids: [part.id], changes: { location_id: 'nope' } })
+      ).status,
+    ).toBe(400);
+    expect(
+      (await app.api.post('/api/parts/bulk').send({ ids: ['nope'], changes: { quantity: 1 } }))
+        .status,
     ).toBe(404);
     expect(
-      (await app.api.post('/api/parts/bulk').send({ ids: [part.id], changes: { quantity: 1, quantity_delta: 1 } })).status,
+      (
+        await app.api
+          .post('/api/parts/bulk')
+          .send({ ids: [part.id], changes: { quantity: 1, quantity_delta: 1 } })
+      ).status,
     ).toBe(400);
   });
 });

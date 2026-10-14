@@ -25,7 +25,9 @@ test('creates an official part and shows validation errors', async ({ page }) =>
   await page.keyboard.press('Enter');
   await page.getByRole('button', { name: 'Create part' }).click();
 
-  await expect(page.getByRole('complementary', { name: 'Part details' })).toContainText('E2E Test Brick');
+  await expect(page.getByRole('complementary', { name: 'Part details' })).toContainText(
+    'E2E Test Brick',
+  );
   await page.getByLabel('Search parts').fill('E2E Test');
   await expect(page.getByRole('button', { name: /Open E2E Test Brick, Red/ })).toBeVisible();
 });
@@ -44,7 +46,9 @@ test('edits a part, then undoes and redoes the edit', async ({ page }) => {
   await expect(page.getByRole('complementary', { name: 'Part details' })).toContainText('21');
 });
 
-test('custom part builder: create, edit the design (new version), view old version', async ({ page }) => {
+test('custom part builder: create, edit the design (new version), view old version', async ({
+  page,
+}) => {
   await openNewPart(page, 'Custom part');
   await page.getByLabel('Name', { exact: true }).fill('E2E Custom Gear');
   await page.getByLabel('Color', { exact: true }).selectOption({ label: 'Blue' });
@@ -72,27 +76,58 @@ test('custom part builder: create, edit the design (new version), view old versi
 
 test('uploads a photo to a part (resized by the server)', async ({ page, request }) => {
   await request.post('/api/parts', {
-    data: { kind: 'custom', name: 'E2E Photo Part', category: 'Bricks', color_id: 1, source: 'other', tags: [] },
+    data: {
+      kind: 'custom',
+      name: 'E2E Photo Part',
+      category: 'Bricks',
+      color_id: 1,
+      source: 'other',
+      tags: [],
+    },
   });
   await page.reload();
   await page.getByLabel('Search parts').fill('E2E Photo Part');
   await page.getByRole('button', { name: /Open E2E Photo Part/ }).click();
-  const png = await sharp({ create: { width: 2000, height: 1000, channels: 3, background: '#1256b8' } }).png().toBuffer();
-  await page.getByLabel(/Add photos/).setInputFiles({ name: 'tiny.png', mimeType: 'image/png', buffer: png });
+  const png = await sharp({
+    create: { width: 2000, height: 1000, channels: 3, background: '#1256b8' },
+  })
+    .png()
+    .toBuffer();
+  await page
+    .getByLabel(/Add photos/)
+    .setInputFiles({ name: 'tiny.png', mimeType: 'image/png', buffer: png });
   await expect(page.getByRole('img', { name: /Photo 1 of 1/ })).toBeVisible();
-  const served = await request.get((await page.getByRole('img', { name: /Photo 1 of 1/ }).getAttribute('src')) ?? '');
+  const served = await request.get(
+    (await page.getByRole('img', { name: /Photo 1 of 1/ }).getAttribute('src')) ?? '',
+  );
   expect(served.status()).toBe(200);
   expect(Number(served.headers()['content-length'])).toBeGreaterThan(0);
 });
 
 test('bulk edit moves several parts at once', async ({ page }) => {
   await page.getByLabel('Search parts').fill('cat:plates');
-  await page.getByRole('checkbox', { name: /^Select/ }).first().check();
-  await page.getByRole('checkbox', { name: /^Select/ }).nth(1).check();
+  await expect(page.getByRole('button', { name: /^Open Plate/ }).first()).toBeVisible();
+  await page
+    .getByRole('checkbox', { name: /^Select/ })
+    .first()
+    .check();
+  await page
+    .getByRole('checkbox', { name: /^Select/ })
+    .nth(1)
+    .check();
   await page.getByRole('button', { name: 'Edit selected…' }).click();
   await page.getByLabel('Add tags (comma separated)').fill('bulk-e2e');
   await page.getByRole('button', { name: /^Apply to 2 parts/ }).click();
   await expect(page.getByText('Updated 2 parts')).toBeVisible();
   await page.getByLabel('Search parts').fill('tag:bulk-e2e');
-  await expect(page.getByText('2 parts')).toBeVisible();
+  await expect(page.getByText('2 parts', { exact: true })).toBeVisible();
+
+  // typing a new search clears the ticks, so hidden parts are never edited by accident
+  await page
+    .getByRole('checkbox', { name: /^Select/ })
+    .first()
+    .check();
+  await expect(page.getByText('1 selected')).toBeVisible();
+  await page.getByLabel('Search parts').fill('cat:tiles');
+  await expect(page.getByText(/selected$/)).toHaveCount(0);
 });

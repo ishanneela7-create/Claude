@@ -4,7 +4,13 @@ import { colorInputSchema, locationInputSchema } from '../../shared/otherSchemas
 import { bulkEditSchema, partInputSchema, partPatchSchema } from '../../shared/partSchemas';
 import { partListQuerySchema, smartViewInputSchema } from '../../shared/querySchemas';
 
-const official = { kind: 'official', name: 'Brick', category: 'Bricks', color_id: 4, design_id: '3001' };
+const official = {
+  kind: 'official',
+  name: 'Brick',
+  category: 'Bricks',
+  color_id: 4,
+  design_id: '3001',
+};
 
 describe('part schemas', () => {
   it('accepts an official part and fills defaults', () => {
@@ -23,9 +29,13 @@ describe('part schemas', () => {
     expect(partInputSchema.safeParse({ ...official, design_id: undefined }).success).toBe(false);
     const custom = { kind: 'custom', name: 'Gear', category: 'Technic', color_id: 1 };
     expect(partInputSchema.safeParse(custom).success).toBe(false);
-    expect(partInputSchema.safeParse({ ...custom, source: '3d_printed', material: 'PLA' }).success).toBe(true);
+    expect(
+      partInputSchema.safeParse({ ...custom, source: '3d_printed', material: 'PLA' }).success,
+    ).toBe(true);
     expect(partInputSchema.safeParse({ ...custom, source: 'magic' }).success).toBe(false);
-    expect(partInputSchema.safeParse({ ...custom, source: 'other', width_plates: -2 }).success).toBe(false);
+    expect(
+      partInputSchema.safeParse({ ...custom, source: 'other', width_plates: -2 }).success,
+    ).toBe(false);
   });
 
   it('limits the year', () => {
@@ -59,13 +69,22 @@ describe('other schemas', () => {
 
   it('reads list queries from text and applies defaults and limits', () => {
     const query = partListQuerySchema.parse({ limit: '50', low_stock: 'true', color_id: '4' });
-    expect(query).toMatchObject({ limit: 50, low_stock: true, color_id: 4, sort: 'name', dir: 'asc', offset: 0 });
+    expect(query).toMatchObject({
+      limit: 50,
+      low_stock: true,
+      color_id: 4,
+      sort: 'name',
+      dir: 'asc',
+      offset: 0,
+    });
     expect(partListQuerySchema.safeParse({ limit: '100000' }).success).toBe(false);
     expect(partListQuerySchema.safeParse({ dir: 'sideways' }).success).toBe(false);
   });
 
   it('checks smart views and import mappings', () => {
-    expect(smartViewInputSchema.safeParse({ name: 'x', filter: { low_stock: 'true' } }).success).toBe(true);
+    expect(
+      smartViewInputSchema.safeParse({ name: 'x', filter: { low_stock: 'true' } }).success,
+    ).toBe(true);
     expect(importMappingSchema.safeParse({ A: 'name', B: '' }).success).toBe(true);
     expect(importMappingSchema.safeParse({ A: 'banana' }).success).toBe(false);
   });

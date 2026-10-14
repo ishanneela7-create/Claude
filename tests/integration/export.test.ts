@@ -8,7 +8,9 @@ let app: TestApp;
 beforeEach(async () => {
   app = makeTestApp();
   const bin = (await app.api.post('/api/locations').send({ name: 'Bin, "special"' })).body;
-  await app.api.post('/api/parts').send(officialBrick({ location_id: bin.id, tags: ['a', 'b'], notes: 'line\nbreak' }));
+  await app.api
+    .post('/api/parts')
+    .send(officialBrick({ location_id: bin.id, tags: ['a', 'b'], notes: 'line\nbreak' }));
   await app.api.post('/api/parts').send(customPart());
 });
 afterEach(() => app.cleanup());
@@ -50,11 +52,14 @@ describe('export', () => {
   });
 
   it('exports a real SQLite backup', async () => {
-    const response = await app.api.get('/api/export/sqlite').buffer(true).parse((res, done) => {
-      const chunks: Buffer[] = [];
-      res.on('data', (chunk: Buffer) => chunks.push(chunk));
-      res.on('end', () => done(null, Buffer.concat(chunks)));
-    });
+    const response = await app.api
+      .get('/api/export/sqlite')
+      .buffer(true)
+      .parse((res, done) => {
+        const chunks: Buffer[] = [];
+        res.on('data', (chunk: Buffer) => chunks.push(chunk));
+        res.on('end', () => done(null, Buffer.concat(chunks)));
+      });
     expect(response.status).toBe(200);
     const file = `${app.context.dataDir}/downloaded.db`;
     fs.writeFileSync(file, response.body as Buffer);

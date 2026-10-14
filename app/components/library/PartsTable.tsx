@@ -1,4 +1,9 @@
-import { flexRender, getCoreRowModel, useReactTable, type SortingState } from '@tanstack/react-table';
+import {
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+  type SortingState,
+} from '@tanstack/react-table';
 import { useMemo } from 'react';
 import type { PartRecord } from '@shared/types';
 import { Icon } from '../ui/Icon';
@@ -51,7 +56,9 @@ export function TableHeader({ listWidth }: { listWidth: number }) {
           <span
             key={header.id}
             role="columnheader"
-            aria-sort={direction === 'asc' ? 'ascending' : direction === 'desc' ? 'descending' : 'none'}
+            aria-sort={
+              direction === 'asc' ? 'ascending' : direction === 'desc' ? 'descending' : 'none'
+            }
             className={header.column.columnDef.meta?.align === 'right' ? 'text-right' : ''}
           >
             {field ? (
@@ -61,7 +68,9 @@ export function TableHeader({ listWidth }: { listWidth: number }) {
                 onClick={() => setSort(field)}
               >
                 {flexRender(header.column.columnDef.header, header.getContext())}
-                {direction && <Icon name="down" size={12} className={direction === 'asc' ? 'rotate-180' : ''} />}
+                {direction && (
+                  <Icon name="down" size={12} className={direction === 'asc' ? 'rotate-180' : ''} />
+                )}
               </button>
             ) : (
               flexRender(header.column.columnDef.header, header.getContext())
@@ -137,7 +146,11 @@ export function PartRow({ part, listWidth, rowIndex, height }: RowProps) {
           ))}
         </>
       ) : (
-        <span role="gridcell" className="col-span-full h-3 animate-pulse rounded bg-raised" aria-label="Loading" />
+        <span
+          role="gridcell"
+          className="col-span-full h-3 animate-pulse rounded bg-raised"
+          aria-label="Loading"
+        />
       )}
     </div>
   );

@@ -28,7 +28,11 @@ export function PartForm({ part, kind, onDone }: Props) {
   const openPart = useUiStore((state) => state.openPart);
   const partKind = part?.kind ?? kind;
 
-  const { register, control, handleSubmit, setValue, watch, formState } = useForm<FormValues, unknown, PartInput>({
+  const { register, control, handleSubmit, setValue, watch, formState } = useForm<
+    FormValues,
+    unknown,
+    PartInput
+  >({
     resolver: zodResolver(partFormSchema),
     defaultValues: part ? valuesFromPart(part) : emptyValues(kind),
   });
@@ -53,7 +57,10 @@ export function PartForm({ part, kind, onDone }: Props) {
       if (saved.kind === 'official') {
         const groups = await api.get<Array<{ parts: Array<{ id: string }> }>>('/parts/duplicates');
         if (groups.some((group) => group.parts.some((item) => item.id === saved.id))) {
-          toast('info', 'Another part has the same design id and color. Use "Find duplicates" in the menu to merge.');
+          toast(
+            'info',
+            'Another part has the same design id and color. Use "Find duplicates" in the menu to merge.',
+          );
         }
       }
     } catch (error) {
@@ -64,23 +71,32 @@ export function PartForm({ part, kind, onDone }: Props) {
   });
 
   return (
-    <form onSubmit={(event) => void save(event)} noValidate className="space-y-4" aria-label={part ? 'Edit part' : 'New part'}>
+    <form
+      onSubmit={(event) => void save(event)}
+      noValidate
+      className="space-y-4"
+      aria-label={part ? 'Edit part' : 'New part'}
+    >
       {part?.kind === 'custom' && (
         <p className="rounded-md bg-accent/10 p-2 text-sm">
-          Changing the design (name, size, studs, material…) saves a new version. Old versions stay viewable.
+          Changing the design (name, size, studs, material…) saves a new version. Old versions stay
+          viewable.
         </p>
       )}
       <div className="grid grid-cols-2 gap-3">
-        <CommonFields register={register} control={control} errors={errors} colorId={watch('color_id')} />
+        <CommonFields
+          register={register}
+          control={control}
+          errors={errors}
+          colorId={watch('color_id')}
+        />
         {partKind === 'official' ? (
           <OfficialFields register={register} errors={errors} />
         ) : (
           <CustomFields register={register} control={control} setValue={setValue} errors={errors} />
         )}
       </div>
-      {!part && (
-        <PhotoPicker files={pendingPhotos} onChange={setPendingPhotos} />
-      )}
+      {!part && <PhotoPicker files={pendingPhotos} onChange={setPendingPhotos} />}
       <div className="sticky bottom-0 flex gap-2 border-t border-line bg-surface py-3">
         <button type="submit" className="btn btn-primary" disabled={saving}>
           {saving ? 'Saving…' : part ? 'Save changes' : 'Create part'}

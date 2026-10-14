@@ -54,8 +54,7 @@ export function readPartTags(db: Database, partId: string): string[] {
 /** Finds a tag by name (any letter case) or makes it. Returns its id. */
 export function ensureTag(db: Database, name: string, record: (change: Change) => void): string {
   const existing = db.prepare('SELECT id FROM tags WHERE name = ?').get(name) as
-    | { id: string }
-    | undefined;
+    { id: string } | undefined;
   if (existing) return existing.id;
   const id = crypto.randomUUID();
   db.prepare('INSERT INTO tags (id, name) VALUES (?, ?)').run(id, name);
@@ -87,7 +86,13 @@ export class ActionRecorder {
   insert(table: string, row: Row & { id: string | number }): void {
     if (!JOURNALED_TABLES.has(table)) throw new Error(`Table not journaled: ${table}`);
     writeRow(this.db, table, row);
-    this.note({ type: 'row', table, id: row.id, before: null, after: readRow(this.db, table, row.id) });
+    this.note({
+      type: 'row',
+      table,
+      id: row.id,
+      before: null,
+      after: readRow(this.db, table, row.id),
+    });
   }
 
   update(table: string, id: string | number, patch: Row): void {
@@ -116,7 +121,11 @@ export class ActionRecorder {
     });
     this.db.prepare('DELETE FROM part_tags WHERE part_id = ?').run(partId);
     const link = this.db.prepare('INSERT INTO part_tags (part_id, tag_id) VALUES (?, ?)');
-    for (const name of unique) link.run(partId, ensureTag(this.db, name, (c) => this.note(c)));
+    for (const name of unique)
+      link.run(
+        partId,
+        ensureTag(this.db, name, (c) => this.note(c)),
+      );
     this.note({ type: 'tags', partId, before, after: readPartTags(this.db, partId) });
   }
 

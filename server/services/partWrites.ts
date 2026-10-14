@@ -39,10 +39,16 @@ export function assertReferences(
   db: Database,
   refs: { color_id?: number; location_id?: string | null; parent_part_id?: string | null },
 ): void {
-  if (refs.color_id !== undefined && !db.prepare('SELECT 1 FROM colors WHERE id = ?').get(refs.color_id)) {
+  if (
+    refs.color_id !== undefined &&
+    !db.prepare('SELECT 1 FROM colors WHERE id = ?').get(refs.color_id)
+  ) {
     throw badRequest(`Color ${refs.color_id} does not exist`);
   }
-  if (refs.location_id && !db.prepare('SELECT 1 FROM locations WHERE id = ?').get(refs.location_id)) {
+  if (
+    refs.location_id &&
+    !db.prepare('SELECT 1 FROM locations WHERE id = ?').get(refs.location_id)
+  ) {
     throw badRequest('That location does not exist');
   }
   if (
@@ -129,7 +135,10 @@ export function assertFieldsMatchKind(kind: string, patch: PartPatch): void {
   const forbidden = kind === 'official' ? CUSTOM_ONLY_FIELDS : OFFICIAL_ONLY_FIELDS;
   const bad = forbidden.filter((field) => (patch as Record<string, unknown>)[field] !== undefined);
   if (bad.length > 0) {
-    throw badRequest(`These fields are only for ${kind === 'official' ? 'custom' : 'official'} parts`, bad);
+    throw badRequest(
+      `These fields are only for ${kind === 'official' ? 'custom' : 'official'} parts`,
+      bad,
+    );
   }
 }
 

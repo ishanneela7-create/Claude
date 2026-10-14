@@ -13,7 +13,13 @@ export function PartCard({ part }: { part: PartRecord | null }) {
   const size = CARD_SIZE[density];
 
   if (!part) {
-    return <div className="animate-pulse rounded-lg bg-raised" style={{ height: size.height }} aria-label="Loading" />;
+    return (
+      <div
+        className="animate-pulse rounded-lg bg-raised"
+        style={{ height: size.height }}
+        aria-label="Loading"
+      />
+    );
   }
   return (
     <div
@@ -34,7 +40,12 @@ export function PartCard({ part }: { part: PartRecord | null }) {
         aria-label={`Open ${part.name}, ${part.color_name}`}
       >
         <span className="flex flex-1 items-center justify-center">
-          <PartThumb imagePath={part.image_path} rgb={part.color_rgb} label={part.name} size={size.image} />
+          <PartThumb
+            imagePath={part.image_path}
+            rgb={part.color_rgb}
+            label={part.name}
+            size={size.image}
+          />
         </span>
         <span className="line-clamp-2 w-full font-medium leading-tight">{part.name}</span>
         <span className="w-full truncate text-xs text-muted">
@@ -42,7 +53,11 @@ export function PartCard({ part }: { part: PartRecord | null }) {
         </span>
       </button>
       <div className="flex items-center justify-between text-xs">
-        <Swatch rgb={part.color_rgb} name={part.color_name} transparent={part.color_is_transparent} />
+        <Swatch
+          rgb={part.color_rgb}
+          name={part.color_name}
+          transparent={part.color_is_transparent}
+        />
         <span className="truncate px-1 text-muted">{part.color_name}</span>
         <span className="rounded bg-accent/15 px-1.5 py-0.5 font-bold tabular-nums text-accent">
           {part.quantity}

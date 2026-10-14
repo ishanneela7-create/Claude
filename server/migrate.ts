@@ -58,7 +58,9 @@ export function migrateUp(db: Database, file: string): number[] {
 
 /** Undoes the newest `steps` migrations. A backup copy is made first. */
 export function migrateDown(db: Database, file: string, steps = 1): number[] {
-  const done = appliedVersions(db).sort((a, b) => b - a).slice(0, steps);
+  const done = appliedVersions(db)
+    .sort((a, b) => b - a)
+    .slice(0, steps);
   if (done.length > 0) backupBeforeMigration(db, file);
   for (const version of done) {
     const migration = MIGRATIONS.find((item) => item.version === version);

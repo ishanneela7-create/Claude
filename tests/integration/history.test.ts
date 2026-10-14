@@ -51,7 +51,9 @@ describe('undo and redo', () => {
   it('undoes location moves and deleting a tag', async () => {
     const a = (await app.api.post('/api/locations').send({ name: 'A' })).body;
     const b = (await app.api.post('/api/locations').send({ name: 'B' })).body;
-    const part = await app.api.post('/api/parts').send(officialBrick({ location_id: b.id, tags: ['x'] }));
+    const part = await app.api
+      .post('/api/parts')
+      .send(officialBrick({ location_id: b.id, tags: ['x'] }));
     await app.api.post(`/api/locations/${b.id}/move`).send({ parent_id: a.id });
     expect((await app.api.get(`/api/parts/${part.body.id}`)).body.location_path).toBe('A > B');
     await app.api.post('/api/history/undo').send({});

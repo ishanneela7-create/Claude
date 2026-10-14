@@ -45,19 +45,27 @@ describe('locations', () => {
   it('refuses to move a location inside itself', async () => {
     const room = await addLocation('Room');
     const child = await addLocation('Child', room.id);
-    const response = await app.api.post(`/api/locations/${room.id}/move`).send({ parent_id: child.id });
+    const response = await app.api
+      .post(`/api/locations/${room.id}/move`)
+      .send({ parent_id: child.id });
     expect(response.status).toBe(400);
   });
 
   it('renames and updates label and color', async () => {
     const room = await addLocation('Room');
     const child = await addLocation('Child', room.id);
-    await app.api.patch(`/api/locations/${room.id}`).send({ name: 'Den', label: 'D', color_code: '#00AA55' });
+    await app.api
+      .patch(`/api/locations/${room.id}`)
+      .send({ name: 'Den', label: 'D', color_code: '#00AA55' });
     const tree = await app.api.get('/api/locations');
     expect(tree.body[0]).toMatchObject({ name: 'Den', label: 'D', color_code: '00AA55' });
     const part = await app.api.post('/api/parts').send(officialBrick({ location_id: child.id }));
-    expect((await app.api.get(`/api/parts/${part.body.id}`)).body.location_path).toBe('Den > Child');
-    expect((await app.api.patch(`/api/locations/${room.id}`).send({ parent_id: null })).status).toBe(400);
+    expect((await app.api.get(`/api/parts/${part.body.id}`)).body.location_path).toBe(
+      'Den > Child',
+    );
+    expect(
+      (await app.api.patch(`/api/locations/${room.id}`).send({ parent_id: null })).status,
+    ).toBe(400);
   });
 
   it('will not delete a location that still holds things, unless contents move', async () => {
@@ -86,6 +94,8 @@ describe('locations', () => {
 
   it('validates input', async () => {
     expect((await app.api.post('/api/locations').send({ name: '' })).status).toBe(400);
-    expect((await app.api.post('/api/locations').send({ name: 'X', parent_id: 'missing' })).status).toBe(404);
+    expect(
+      (await app.api.post('/api/locations').send({ name: 'X', parent_id: 'missing' })).status,
+    ).toBe(404);
   });
 });

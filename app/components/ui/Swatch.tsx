@@ -8,7 +8,13 @@ interface SwatchProps {
 }
 
 /** A color chip. Screen readers hear the color name. */
-export function Swatch({ rgb, name, transparent = false, size = 16, showName = false }: SwatchProps) {
+export function Swatch({
+  rgb,
+  name,
+  transparent = false,
+  size = 16,
+  showName = false,
+}: SwatchProps) {
   return (
     <span className="inline-flex items-center gap-2">
       <span

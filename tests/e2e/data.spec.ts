@@ -14,7 +14,11 @@ test('locations: add a bin, move it, and open its QR code', async ({ page, reque
   await dialog.getByRole('button', { name: 'Add inside selected' }).click();
   await expect(dialog.getByRole('treeitem', { name: /E2E Bin/ })).toBeVisible();
 
-  const tree = (await (await request.get('/api/locations')).json()) as Array<{ id: string; name: string; children: Array<{ id: string }> }>;
+  const tree = (await (await request.get('/api/locations')).json()) as Array<{
+    id: string;
+    name: string;
+    children: Array<{ id: string }>;
+  }>;
   const room = tree.find((node) => node.name === 'E2E Room');
   expect(room?.children).toHaveLength(1);
   const qr = await request.get(`/api/locations/${room?.children[0]?.id}/qr`);
@@ -30,7 +34,8 @@ test('import: map columns, preview 20 rows, import, then roll back', async ({ pa
   await page.getByRole('menuitem', { name: 'Import…' }).click();
   const dialog = page.getByRole('dialog', { name: 'Import parts' });
   const rows = ['Item,Num,Hue,Count'];
-  for (let index = 0; index < 25; index++) rows.push(`E2E Import ${index},8${String(index).padStart(4, '0')},Red,2`);
+  for (let index = 0; index < 25; index++)
+    rows.push(`E2E Import ${index},8${String(index).padStart(4, '0')},Red,2`);
   await dialog.getByLabel('Choose a .csv file').setInputFiles({
     name: 'e2e.csv',
     mimeType: 'text/csv',
@@ -71,4 +76,33 @@ test('duplicates dialog finds the sample duplicate and merges it', async ({ page
   page.once('dialog', (confirm) => void confirm.accept());
   await dialog.getByRole('button', { name: 'Merge into one' }).first().click();
   await expect(dialog.getByText('No duplicates')).toBeVisible();
+});
+
+test('custom part file: export it, then import it as a new part', async ({ page, request }) => {
+  const created = await (
+    await request.post('/api/parts', {
+      data: {
+        kind: 'custom',
+        name: 'E2E Shared Part',
+        category: 'Plates',
+        color_id: 4,
+        source: 'scratch_built',
+        width_plates: 3,
+        tags: [],
+      },
+    })
+  ).json();
+  const exported = await request.get(`/api/parts/${created.id}/export`);
+  expect(exported.headers()['content-disposition']).toContain('attachment');
+  await page.reload();
+  await expect(page.getByRole('grid', { name: 'Parts table' })).toBeVisible();
+  await page.getByLabel('Custom part file').setInputFiles({
+    name: 'shared.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from(await exported.text()),
+  });
+  await expect(page.getByText('Imported custom part "E2E Shared Part"')).toBeVisible();
+  await expect(page.getByRole('complementary', { name: 'Part details' })).toContainText(
+    'Custom (version 1)',
+  );
 });

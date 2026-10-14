@@ -74,7 +74,8 @@ export function toPayload(values: FormValues): unknown {
 /** Form input in, checked PartInput out. Error paths match the form field names. */
 export const partFormSchema = formValuesSchema.transform(toPayload).pipe(partInputSchema);
 
-const text = (value: string | number | null | undefined): string => (value == null ? '' : String(value));
+const text = (value: string | number | null | undefined): string =>
+  value == null ? '' : String(value);
 
 export function emptyValues(kind: PartInput['kind']): FormValues {
   return {

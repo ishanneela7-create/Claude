@@ -9,7 +9,9 @@ afterEach(() => app.cleanup());
 
 describe('POST /api/parts', () => {
   it('creates an official part with its color and tags', async () => {
-    const response = await app.api.post('/api/parts').send(officialBrick({ tags: ['rare', 'Rare'] }));
+    const response = await app.api
+      .post('/api/parts')
+      .send(officialBrick({ tags: ['rare', 'Rare'] }));
     expect(response.status).toBe(201);
     expect(response.body).toMatchObject({
       kind: 'official',
@@ -31,7 +33,9 @@ describe('POST /api/parts', () => {
   it('rejects an unknown color and an unknown location', async () => {
     const badColor = await app.api.post('/api/parts').send(officialBrick({ color_id: 99999 }));
     expect(badColor.status).toBe(400);
-    const badLocation = await app.api.post('/api/parts').send(officialBrick({ location_id: 'nope' }));
+    const badLocation = await app.api
+      .post('/api/parts')
+      .send(officialBrick({ location_id: 'nope' }));
     expect(badLocation.status).toBe(400);
   });
 
@@ -116,7 +120,9 @@ describe('DELETE /api/parts/:id', () => {
     const response = await app.api.delete(`/api/parts/${created.body.id}`);
     expect(response.status).toBe(204);
     expect((await app.api.get(`/api/parts/${created.body.id}`)).status).toBe(404);
-    const row = app.context.db.prepare('SELECT deleted_at FROM parts WHERE id = ?').get(created.body.id);
+    const row = app.context.db
+      .prepare('SELECT deleted_at FROM parts WHERE id = ?')
+      .get(created.body.id);
     expect(row).toMatchObject({ deleted_at: expect.any(String) });
   });
 });
@@ -136,7 +142,9 @@ describe('custom part files', () => {
   it('refuses to export an official part and bad import files', async () => {
     const official = await app.api.post('/api/parts').send(officialBrick());
     expect((await app.api.get(`/api/parts/${official.body.id}/export`)).status).toBe(409);
-    expect((await app.api.post('/api/parts/import-custom').send({ format: 'nope' })).status).toBe(400);
+    expect((await app.api.post('/api/parts/import-custom').send({ format: 'nope' })).status).toBe(
+      400,
+    );
   });
 
   it('versions only exist for custom parts', async () => {

@@ -54,4 +54,3 @@ export function dataRouter({ db, dataDir }: AppContext): Router {
 
   return router;
 }
-

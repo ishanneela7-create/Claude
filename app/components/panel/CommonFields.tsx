@@ -23,7 +23,13 @@ export function CommonFields({ register, control, errors, colorId }: Props) {
   return (
     <>
       <Field id="name" label="Name" error={message('name')} className="col-span-2">
-        <input id="name" className="field" aria-invalid={!!errors.name} aria-describedby={describedBy('name', message('name'))} {...register('name')} />
+        <input
+          id="name"
+          className="field"
+          aria-invalid={!!errors.name}
+          aria-describedby={describedBy('name', message('name'))}
+          {...register('name')}
+        />
       </Field>
 
       <Field id="category" label="Category" error={message('category')}>
@@ -39,8 +45,21 @@ export function CommonFields({ register, control, errors, colorId }: Props) {
 
       <Field id="color_id" label="Color" error={message('color_id')} className="col-span-2">
         <div className="flex items-center gap-2">
-          {picked && <Swatch rgb={picked.rgb} name={picked.name} transparent={picked.is_transparent} size={24} />}
-          <select id="color_id" className="field" aria-invalid={!!errors.color_id} aria-describedby={describedBy('color_id', message('color_id'))} {...register('color_id')}>
+          {picked && (
+            <Swatch
+              rgb={picked.rgb}
+              name={picked.name}
+              transparent={picked.is_transparent}
+              size={24}
+            />
+          )}
+          <select
+            id="color_id"
+            className="field"
+            aria-invalid={!!errors.color_id}
+            aria-describedby={describedBy('color_id', message('color_id'))}
+            {...register('color_id')}
+          >
             <option value="">Choose a color…</option>
             {colors.map((color) => (
               <option key={color.id} value={color.id}>
@@ -53,7 +72,16 @@ export function CommonFields({ register, control, errors, colorId }: Props) {
       </Field>
 
       <Field id="quantity" label="Quantity" error={message('quantity')}>
-        <input id="quantity" type="number" min={0} step={1} inputMode="numeric" className="field" aria-invalid={!!errors.quantity} {...register('quantity')} />
+        <input
+          id="quantity"
+          type="number"
+          min={0}
+          step={1}
+          inputMode="numeric"
+          className="field"
+          aria-invalid={!!errors.quantity}
+          {...register('quantity')}
+        />
       </Field>
       <Field id="location_id" label="Location" error={message('location_id')}>
         <select id="location_id" className="field" {...register('location_id')}>
@@ -68,7 +96,13 @@ export function CommonFields({ register, control, errors, colorId }: Props) {
       </Field>
 
       <Field id="tags" label="Tags" className="col-span-2">
-        <Controller control={control} name="tags" render={({ field }) => <TagInput id="tags" value={field.value} onChange={field.onChange} />} />
+        <Controller
+          control={control}
+          name="tags"
+          render={({ field }) => (
+            <TagInput id="tags" value={field.value} onChange={field.onChange} />
+          )}
+        />
       </Field>
       <Field id="notes" label="Notes (markdown)" error={message('notes')} className="col-span-2">
         <textarea id="notes" rows={4} className="field" {...register('notes')} />

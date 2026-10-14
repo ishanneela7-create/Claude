@@ -60,7 +60,8 @@ export function previewImport(
   rows.forEach((cells, index) => {
     const result = normalizeRow(headers, cells, mapping, cache, rebrickable);
     if (result.ok) valid += 1;
-    else if (errors.length < MAX_REPORTED_ERRORS) errors.push({ row: index + 2, message: result.error });
+    else if (errors.length < MAX_REPORTED_ERRORS)
+      errors.push({ row: index + 2, message: result.error });
     if (index < PREVIEW_ROWS) {
       sample.push({
         cells,
@@ -77,7 +78,10 @@ export function ensureLocationPath(
   text: string,
   cache: Map<string, string>,
 ): string {
-  const names = text.split(/\s*>\s*/).map((name) => name.trim()).filter(Boolean);
+  const names = text
+    .split(/\s*>\s*/)
+    .map((name) => name.trim())
+    .filter(Boolean);
   let parentId: string | null = null;
   let parentPath = '';
   let parentIdPath = '/';
@@ -138,16 +142,25 @@ export function runImport(db: Database, request: ImportRunRequest): ImportResult
     db.prepare(
       `INSERT INTO imports (id, source_name, format, mapping_json, row_count, created_at)
        VALUES (?, ?, ?, ?, ?, ?)`,
-    ).run(importId, request.source_name, request.format, JSON.stringify(mapping), rows.length, nowIso());
+    ).run(
+      importId,
+      request.source_name,
+      request.format,
+      JSON.stringify(mapping),
+      rows.length,
+      nowIso(),
+    );
 
     rows.forEach((cells, index) => {
       const result = normalizeRow(headers, cells, mapping, cache, rebrickable);
       if (!result.ok) {
-        if (errors.length < MAX_REPORTED_ERRORS) errors.push({ row: index + 2, message: result.error });
+        if (errors.length < MAX_REPORTED_ERRORS)
+          errors.push({ row: index + 2, message: result.error });
         return;
       }
       const { input, locationPath }: NormalizedRow = result.row;
-      if (locationPath) input.location_id = ensureLocationPath(recorder, locationPath, locationCache);
+      if (locationPath)
+        input.location_id = ensureLocationPath(recorder, locationPath, locationCache);
 
       const existing =
         input.kind === 'official'
@@ -161,7 +174,12 @@ export function runImport(db: Database, request: ImportRunRequest): ImportResult
           quantity: row.quantity + input.quantity,
           updated_at: nowIso(),
         });
-        logRow.run(importId, existing.id, 'updated', JSON.stringify({ quantity_added: input.quantity }));
+        logRow.run(
+          importId,
+          existing.id,
+          'updated',
+          JSON.stringify({ quantity_added: input.quantity }),
+        );
         updated += 1;
       } else {
         const id = insertPart(recorder, input);
@@ -194,7 +212,9 @@ export function getImport(db: Database, id: string): ImportRecord {
 }
 
 export function listImports(db: Database): ImportRecord[] {
-  const rows = db.prepare('SELECT id FROM imports ORDER BY created_at DESC').all() as { id: string }[];
+  const rows = db.prepare('SELECT id FROM imports ORDER BY created_at DESC').all() as {
+    id: string;
+  }[];
   return rows.map((row) => getImport(db, row.id));
 }
 
@@ -203,7 +223,9 @@ export function rollbackImport(db: Database, id: string): ImportRecord {
   const record = getImport(db, id);
   if (record.status === 'rolled_back') throw conflict('This import was already rolled back');
   const rows = db
-    .prepare('SELECT part_id, action, before_json FROM import_rows WHERE import_id = ? ORDER BY id DESC')
+    .prepare(
+      'SELECT part_id, action, before_json FROM import_rows WHERE import_id = ? ORDER BY id DESC',
+    )
     .all(id) as Array<{ part_id: string; action: string; before_json: string | null }>;
   const recorder = new ActionRecorder(db, false);
   db.transaction(() => {
@@ -211,8 +233,8 @@ export function rollbackImport(db: Database, id: string): ImportRecord {
       if (row.action === 'created') {
         recorder.update('parts', row.part_id, { deleted_at: nowIso() });
       } else {
-        const added = (JSON.parse(row.before_json ?? '{}') as { quantity_added?: number })
-          .quantity_added ?? 0;
+        const added =
+          (JSON.parse(row.before_json ?? '{}') as { quantity_added?: number }).quantity_added ?? 0;
         const current = db.prepare('SELECT quantity FROM parts WHERE id = ?').get(row.part_id) as {
           quantity: number;
         };

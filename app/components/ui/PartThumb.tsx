@@ -30,9 +30,36 @@ export function PartThumb({ imagePath, rgb, label, size }: PartThumbProps) {
       aria-label={`Placeholder picture for ${label}`}
       className="shrink-0"
     >
-      <rect x="4" y="16" width="32" height="20" rx="3" fill={`#${rgb}`} stroke="currentColor" strokeOpacity="0.5" />
-      <rect x="9" y="9" width="8" height="8" rx="2" fill={`#${rgb}`} stroke="currentColor" strokeOpacity="0.5" />
-      <rect x="23" y="9" width="8" height="8" rx="2" fill={`#${rgb}`} stroke="currentColor" strokeOpacity="0.5" />
+      <rect
+        x="4"
+        y="16"
+        width="32"
+        height="20"
+        rx="3"
+        fill={`#${rgb}`}
+        stroke="currentColor"
+        strokeOpacity="0.5"
+      />
+      <rect
+        x="9"
+        y="9"
+        width="8"
+        height="8"
+        rx="2"
+        fill={`#${rgb}`}
+        stroke="currentColor"
+        strokeOpacity="0.5"
+      />
+      <rect
+        x="23"
+        y="9"
+        width="8"
+        height="8"
+        rx="2"
+        fill={`#${rgb}`}
+        stroke="currentColor"
+        strokeOpacity="0.5"
+      />
     </svg>
   );
 }

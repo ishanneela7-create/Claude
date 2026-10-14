@@ -104,7 +104,11 @@ function SidebarContent() {
 
       <SectionTitle
         action={
-          <button type="button" className="text-xs font-semibold text-brand hover:underline" onClick={() => openDialog('locations')}>
+          <button
+            type="button"
+            className="text-xs font-semibold text-brand hover:underline"
+            onClick={() => openDialog('locations')}
+          >
             Manage
           </button>
         }
@@ -178,7 +182,12 @@ export function Sidebar() {
       </aside>
       {open && (
         <div className="fixed inset-0 z-40 lg:hidden">
-          <button type="button" className="absolute inset-0 bg-black/50" aria-label="Close menu" onClick={() => setOpen(false)} />
+          <button
+            type="button"
+            className="absolute inset-0 bg-black/50"
+            aria-label="Close menu"
+            onClick={() => setOpen(false)}
+          />
           <aside
             className="absolute inset-y-0 left-0 flex w-[min(86vw,320px)] flex-col bg-surface shadow-xl"
             onClick={(event) => {
@@ -187,7 +196,12 @@ export function Sidebar() {
           >
             <div className="flex items-center justify-between border-b border-line px-3 py-2">
               <span className="font-bold text-brand">Brick Library</span>
-              <button type="button" className="btn-icon" aria-label="Close menu" onClick={() => setOpen(false)}>
+              <button
+                type="button"
+                className="btn-icon"
+                aria-label="Close menu"
+                onClick={() => setOpen(false)}
+              >
                 <Icon name="close" />
               </button>
             </div>

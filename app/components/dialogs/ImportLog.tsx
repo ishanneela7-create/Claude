@@ -11,11 +11,19 @@ export function ImportLog() {
   const version = useDataStore((state) => state.version);
 
   useEffect(() => {
-    api.get<ImportRecord[]>('/imports').then(setImports).catch(() => setImports([]));
+    api
+      .get<ImportRecord[]>('/imports')
+      .then(setImports)
+      .catch(() => setImports([]));
   }, [version]);
 
   const rollback = async (item: ImportRecord) => {
-    if (!window.confirm(`Roll back "${item.source_name}"? Parts it created are hidden and quantities it added are taken back.`)) return;
+    if (
+      !window.confirm(
+        `Roll back "${item.source_name}"? Parts it created are hidden and quantities it added are taken back.`,
+      )
+    )
+      return;
     try {
       await api.post(`/imports/${item.id}/rollback`);
       await bump();
@@ -33,11 +41,17 @@ export function ImportLog() {
           <span>
             <span className="font-semibold">{item.source_name}</span>
             <span className="block text-xs text-muted">
-              {item.created_at.slice(0, 16).replace('T', ' ')} · {item.created_count} added, {item.updated_count} updated ·{' '}
+              {item.created_at.slice(0, 16).replace('T', ' ')} · {item.created_count} added,{' '}
+              {item.updated_count} updated ·{' '}
               {item.status === 'rolled_back' ? 'rolled back' : item.format}
             </span>
           </span>
-          <button type="button" className="btn" disabled={item.status === 'rolled_back'} onClick={() => void rollback(item)}>
+          <button
+            type="button"
+            className="btn"
+            disabled={item.status === 'rolled_back'}
+            onClick={() => void rollback(item)}
+          >
             Roll back
           </button>
         </li>

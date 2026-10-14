@@ -5,14 +5,19 @@ test.use({ viewport: { width: 375, height: 760 } });
 test('works at phone width without sideways scrolling', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByRole('grid', { name: 'Parts table' })).toBeVisible();
-  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - window.innerWidth,
+  );
   expect(overflow).toBeLessThanOrEqual(0);
 
   await page.getByRole('button', { name: 'Open menu' }).click();
   await page.getByRole('button', { name: 'Custom parts' }).click();
   await expect(page.getByText('View: Custom parts')).toBeVisible();
 
-  await page.getByRole('button', { name: /^Open (?!menu)/ }).first().click();
+  await page
+    .getByRole('button', { name: /^Open (?!menu)/ })
+    .first()
+    .click();
   const panel = page.getByRole('complementary', { name: 'Part details' });
   await expect(panel).toBeVisible();
   const box = await panel.boundingBox();

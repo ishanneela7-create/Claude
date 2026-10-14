@@ -33,7 +33,13 @@ export function PartDetails({ part }: { part: Detail }) {
         <div className="min-w-0">
           <p className="text-xl font-bold leading-tight">{part.name}</p>
           <p className="flex items-center gap-2 text-sm text-muted">
-            <Swatch rgb={part.color_rgb} name={part.color_name} transparent={part.color_is_transparent} size={14} showName />
+            <Swatch
+              rgb={part.color_rgb}
+              name={part.color_name}
+              transparent={part.color_is_transparent}
+              size={14}
+              showName
+            />
           </p>
         </div>
       </div>
@@ -42,7 +48,9 @@ export function PartDetails({ part }: { part: Detail }) {
         <Row label="Quantity">
           <span className="text-lg font-bold text-accent">{part.quantity}</span>
         </Row>
-        <Row label="Kind">{part.kind === 'custom' ? `Custom (version ${part.version})` : 'Official'}</Row>
+        <Row label="Kind">
+          {part.kind === 'custom' ? `Custom (version ${part.version})` : 'Official'}
+        </Row>
         <Row label="Category">
           {part.category}
           {part.subcategory ? ` › ${part.subcategory}` : ''}
@@ -51,13 +59,18 @@ export function PartDetails({ part }: { part: Detail }) {
         {part.kind === 'official' ? (
           <>
             <Row label="Design id">{part.design_id}</Row>
-            {part.rebrickable_part_num && <Row label="Rebrickable">{part.rebrickable_part_num}</Row>}
+            {part.rebrickable_part_num && (
+              <Row label="Rebrickable">{part.rebrickable_part_num}</Row>
+            )}
             {part.ldraw_id && <Row label="LDraw id">{part.ldraw_id}</Row>}
             {part.year_introduced && <Row label="Year">{part.year_introduced}</Row>}
           </>
         ) : (
           <>
-            <Row label="Source">{CUSTOM_SOURCE_LABELS[part.source as keyof typeof CUSTOM_SOURCE_LABELS] ?? part.source}</Row>
+            <Row label="Source">
+              {CUSTOM_SOURCE_LABELS[part.source as keyof typeof CUSTOM_SOURCE_LABELS] ??
+                part.source}
+            </Row>
             {part.creator && <Row label="Creator">{part.creator}</Row>}
             {size && <Row label="Size">{size} (studs x studs x plates)</Row>}
             {part.stud_pattern && <Row label="Stud pattern">{part.stud_pattern}</Row>}
@@ -66,11 +79,13 @@ export function PartDetails({ part }: { part: Detail }) {
           </>
         )}
         <Row label="Tags">
-          {part.tags.length === 0 ? '—' : part.tags.map((tag) => (
-            <span key={tag} className="chip mr-1">
-              {tag}
-            </span>
-          ))}
+          {part.tags.length === 0
+            ? '—'
+            : part.tags.map((tag) => (
+                <span key={tag} className="chip mr-1">
+                  {tag}
+                </span>
+              ))}
         </Row>
         <Row label="Added">{part.created_at.slice(0, 10)}</Row>
       </dl>

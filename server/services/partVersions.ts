@@ -29,9 +29,7 @@ export function createNewVersion(recorder: ActionRecorder, current: Row, patch: 
     updated_at: stamp,
   });
   recorder.setTags(newId, patch.tags ?? readPartTags(db, String(current.id)));
-  const photos = db
-    .prepare('SELECT * FROM part_photos WHERE part_id = ?')
-    .all(current.id) as Row[];
+  const photos = db.prepare('SELECT * FROM part_photos WHERE part_id = ?').all(current.id) as Row[];
   for (const photo of photos) {
     recorder.insert('part_photos', { ...photo, id: crypto.randomUUID(), part_id: newId });
   }
@@ -40,8 +38,7 @@ export function createNewVersion(recorder: ActionRecorder, current: Row, patch: 
 
 export function listVersions(db: Database, id: string): PartRecord[] {
   const row = db.prepare('SELECT kind, version_group_id FROM parts WHERE id = ?').get(id) as
-    | { kind: string; version_group_id: string | null }
-    | undefined;
+    { kind: string; version_group_id: string | null } | undefined;
   if (!row) throw notFound('Part');
   if (row.kind !== 'custom' || !row.version_group_id) {
     throw conflict('Only custom parts have versions');

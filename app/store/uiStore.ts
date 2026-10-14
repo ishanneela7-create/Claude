@@ -8,7 +8,8 @@ export type Density = 'compact' | 'normal' | 'comfortable';
 export type SortField = (typeof SORT_FIELDS)[number];
 export type GroupField = (typeof GROUP_FIELDS)[number];
 export type PanelMode = 'closed' | 'view' | 'edit' | 'new';
-export type DialogName = 'import' | 'shortcuts' | 'duplicates' | 'locations' | 'colors' | 'bulk' | null;
+export type DialogName =
+  'import' | 'shortcuts' | 'duplicates' | 'locations' | 'colors' | 'bulk' | null;
 
 export interface Filters {
   category?: string;

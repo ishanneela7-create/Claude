@@ -19,7 +19,9 @@ export function PhotoPicker({ files, onChange, existing = 0, onAddNow, label = '
   useEffect(() => () => previews.forEach((url) => URL.revokeObjectURL(url)), [previews]);
 
   const accept = (list: FileList | null) => {
-    const chosen = [...(list ?? [])].filter((file) => file.type.startsWith('image/')).slice(0, Math.max(0, room));
+    const chosen = [...(list ?? [])]
+      .filter((file) => file.type.startsWith('image/'))
+      .slice(0, Math.max(0, room));
     if (chosen.length === 0) return;
     if (onAddNow) onAddNow(chosen);
     else onChange([...files, ...chosen]);
@@ -42,12 +44,20 @@ export function PhotoPicker({ files, onChange, existing = 0, onAddNow, label = '
           event.target.value = '';
         }}
       />
-      {room <= 0 && <p className="mt-1 text-xs text-muted">This part has the maximum of {MAX_PHOTOS_PER_PART} photos.</p>}
+      {room <= 0 && (
+        <p className="mt-1 text-xs text-muted">
+          This part has the maximum of {MAX_PHOTOS_PER_PART} photos.
+        </p>
+      )}
       {files.length > 0 && (
         <ul className="mt-2 flex flex-wrap gap-2" aria-label="Photos waiting to be saved">
           {files.map((file, index) => (
             <li key={`${file.name}-${index}`} className="relative">
-              <img src={previews[index]} alt={`Waiting to upload: ${file.name}`} className="h-16 w-16 rounded object-cover" />
+              <img
+                src={previews[index]}
+                alt={`Waiting to upload: ${file.name}`}
+                className="h-16 w-16 rounded object-cover"
+              />
               <button
                 type="button"
                 className="absolute -right-1 -top-1 rounded-full bg-danger p-0.5 text-white"

@@ -5,6 +5,7 @@ import { flattenLocations, useDataStore } from '../../store/dataStore';
 import { useUiStore } from '../../store/uiStore';
 import { Icon } from '../ui/Icon';
 import { Modal } from '../ui/Modal';
+import { DeleteLocationPanel } from './DeleteLocationPanel';
 
 const LEVEL_NAMES = ['Room', 'Cabinet', 'Drawer', 'Bin'];
 
@@ -52,7 +53,7 @@ export function LocationsDialog({ onClose }: { onClose(): void }) {
     if (node) walk(node);
     return ids;
   };
-  const selectedNode = selected ? flat.find((node) => node.id === selected.id) ?? null : null;
+  const selectedNode = selected ? (flat.find((node) => node.id === selected.id) ?? null) : null;
   const blocked = descendants(selectedNode);
 
   const addLocation = (parentId: string | null) =>
@@ -82,8 +83,14 @@ export function LocationsDialog({ onClose }: { onClose(): void }) {
     <Modal title="Locations and bins" onClose={onClose} wide>
       <div className="grid gap-4 md:grid-cols-[1fr_1.2fr]">
         <div>
-          <ul role="tree" aria-label="All locations" className="max-h-72 overflow-auto rounded-md border border-line p-1">
-            {flat.length === 0 && <li className="p-2 text-sm text-muted">No locations yet. Add a room first.</li>}
+          <ul
+            role="tree"
+            aria-label="All locations"
+            className="max-h-72 overflow-auto rounded-md border border-line p-1"
+          >
+            {flat.length === 0 && (
+              <li className="p-2 text-sm text-muted">No locations yet. Add a room first.</li>
+            )}
             {flat.map((node) => (
               <li key={node.id} role="treeitem" aria-selected={node.id === selectedId}>
                 <button
@@ -103,13 +110,29 @@ export function LocationsDialog({ onClose }: { onClose(): void }) {
             <label htmlFor="new-location" className="sr-only">
               New location name
             </label>
-            <input id="new-location" className="field" placeholder="New location name" value={newName} onChange={(event) => setNewName(event.target.value)} />
+            <input
+              id="new-location"
+              className="field"
+              placeholder="New location name"
+              value={newName}
+              onChange={(event) => setNewName(event.target.value)}
+            />
           </div>
           <div className="mt-2 flex flex-wrap gap-2">
-            <button type="button" className="btn btn-accent" disabled={!newName.trim()} onClick={() => void addLocation(null)}>
+            <button
+              type="button"
+              className="btn btn-accent"
+              disabled={!newName.trim()}
+              onClick={() => void addLocation(null)}
+            >
               Add top level
             </button>
-            <button type="button" className="btn" disabled={!newName.trim() || !selected} onClick={() => void addLocation(selected?.id ?? null)}>
+            <button
+              type="button"
+              className="btn"
+              disabled={!newName.trim() || !selected}
+              onClick={() => void addLocation(selected?.id ?? null)}
+            >
               Add inside selected
             </button>
           </div>
@@ -118,20 +141,31 @@ export function LocationsDialog({ onClose }: { onClose(): void }) {
         {selected ? (
           <div className="space-y-3" aria-label={`Edit ${selected.name}`}>
             <p className="text-sm text-muted">
-              {selected.level_label ?? 'Location'} · {selected.total_part_count} parts inside (including sub-locations)
+              {selected.level_label ?? 'Location'} · {selected.total_part_count} parts inside
+              (including sub-locations)
             </p>
             <div>
               <label htmlFor="loc-name" className="label">
                 Name
               </label>
-              <input id="loc-name" className="field" value={name} onChange={(event) => setName(event.target.value)} />
+              <input
+                id="loc-name"
+                className="field"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+              />
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <label htmlFor="loc-label" className="label">
                   Printed label
                 </label>
-                <input id="loc-label" className="field" value={label} onChange={(event) => setLabel(event.target.value)} />
+                <input
+                  id="loc-label"
+                  className="field"
+                  value={label}
+                  onChange={(event) => setLabel(event.target.value)}
+                />
               </div>
               <div>
                 <label htmlFor="loc-color" className="label">
@@ -145,7 +179,11 @@ export function LocationsDialog({ onClose }: { onClose(): void }) {
                     value={`#${color || '1256b8'}`}
                     onChange={(event) => setColor(event.target.value.slice(1))}
                   />
-                  <button type="button" className="text-xs font-semibold text-brand hover:underline" onClick={() => setColor('')}>
+                  <button
+                    type="button"
+                    className="text-xs font-semibold text-brand hover:underline"
+                    onClick={() => setColor('')}
+                  >
                     None
                   </button>
                 </div>
@@ -179,7 +217,14 @@ export function LocationsDialog({ onClose }: { onClose(): void }) {
                 value=""
                 onChange={(event) => {
                   const value = event.target.value;
-                  if (value) void run(() => api.post(`/locations/${selected.id}/move`, { parent_id: value === '__top' ? null : value }), 'Moved');
+                  if (value)
+                    void run(
+                      () =>
+                        api.post(`/locations/${selected.id}/move`, {
+                          parent_id: value === '__top' ? null : value,
+                        }),
+                      'Moved',
+                    );
                 }}
               >
                 <option value="">Choose a new place…</option>
@@ -199,7 +244,7 @@ export function LocationsDialog({ onClose }: { onClose(): void }) {
               <button type="button" className="btn" onClick={printQr}>
                 <Icon name="qr" size={16} /> Print QR code
               </button>
-              <DeleteLocation selected={selected} flat={flat} run={run} />
+              <DeleteLocationPanel selected={selected} flat={flat} run={run} />
             </div>
           </div>
         ) : (
@@ -207,69 +252,5 @@ export function LocationsDialog({ onClose }: { onClose(): void }) {
         )}
       </div>
     </Modal>
-  );
-}
-
-interface DeleteProps {
-  selected: LocationNode & { depth: number };
-  flat: Array<LocationNode & { depth: number }>;
-  run(action: () => Promise<unknown>, success?: string): Promise<void>;
-}
-
-function DeleteLocation({ selected, flat, run }: DeleteProps) {
-  const [moveTo, setMoveTo] = useState('');
-  const [open, setOpen] = useState(false);
-  const blocked = new Set<string>();
-  const walk = (node: LocationNode) => {
-    blocked.add(node.id);
-    node.children.forEach(walk);
-  };
-  walk(selected);
-  const notEmpty = selected.total_part_count > 0 || selected.children.length > 0;
-
-  if (!open) {
-    return (
-      <button type="button" className="btn btn-danger" onClick={() => setOpen(true)}>
-        <Icon name="trash" size={16} /> Delete…
-      </button>
-    );
-  }
-  return (
-    <div className="w-full space-y-2 rounded-md border border-danger p-3 text-sm">
-      {notEmpty ? (
-        <>
-          <p>This location is not empty. Choose where its parts and sub-locations go. Nothing is lost.</p>
-          <label htmlFor="loc-delete-to" className="sr-only">
-            Move contents to
-          </label>
-          <select id="loc-delete-to" className="field" value={moveTo} onChange={(event) => setMoveTo(event.target.value)}>
-            <option value="">Choose…</option>
-            {flat
-              .filter((node) => !blocked.has(node.id))
-              .map((node) => (
-                <option key={node.id} value={node.id}>
-                  {' '.repeat(node.depth)}
-                  {node.name}
-                </option>
-              ))}
-          </select>
-        </>
-      ) : (
-        <p>Delete this empty location? You can undo this.</p>
-      )}
-      <div className="flex gap-2">
-        <button
-          type="button"
-          className="btn btn-danger"
-          disabled={notEmpty && !moveTo}
-          onClick={() => void run(() => api.delete(`/locations/${selected.id}${moveTo ? `?move_to=${moveTo}` : ''}`), 'Location deleted')}
-        >
-          Confirm delete
-        </button>
-        <button type="button" className="btn" onClick={() => setOpen(false)}>
-          Cancel
-        </button>
-      </div>
-    </div>
   );
 }

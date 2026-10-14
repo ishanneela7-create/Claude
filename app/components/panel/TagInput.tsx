@@ -15,7 +15,8 @@ export function TagInput({ id, value, onChange }: TagInputProps) {
 
   const add = (raw: string) => {
     const name = raw.trim();
-    if (name && !value.some((tag) => tag.toLowerCase() === name.toLowerCase())) onChange([...value, name]);
+    if (name && !value.some((tag) => tag.toLowerCase() === name.toLowerCase()))
+      onChange([...value, name]);
     setDraft('');
   };
   const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {

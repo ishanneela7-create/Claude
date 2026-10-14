@@ -11,24 +11,39 @@ export function VersionHistory({ part }: { part: PartRecord }) {
   const openPart = useUiStore((state) => state.openPart);
 
   useEffect(() => {
-    api.get<PartRecord[]>(`/parts/${part.id}/versions`).then(setVersions).catch(() => setVersions([]));
+    api
+      .get<PartRecord[]>(`/parts/${part.id}/versions`)
+      .then(setVersions)
+      .catch(() => setVersions([]));
   }, [part.id, version]);
 
   if (versions.length < 2) {
-    return <p className="text-sm text-muted">This is version 1. Editing the design will save a new version.</p>;
+    return (
+      <p className="text-sm text-muted">
+        This is version 1. Editing the design will save a new version.
+      </p>
+    );
   }
   return (
     <ol className="space-y-2" aria-label="Version history">
       {versions.map((item) => {
         const size = formatDimensions(item.width_plates, item.depth_plates, item.height_plates);
         return (
-          <li key={item.id} className={`rounded-md border p-2 text-sm ${item.id === part.id ? 'border-brand bg-brand/10' : 'border-line'}`}>
+          <li
+            key={item.id}
+            className={`rounded-md border p-2 text-sm ${item.id === part.id ? 'border-brand bg-brand/10' : 'border-line'}`}
+          >
             <div className="flex items-center justify-between gap-2">
               <span className="font-semibold">
-                Version {item.version} {item.is_current && <span className="chip ml-1">Current</span>}
+                Version {item.version}{' '}
+                {item.is_current && <span className="chip ml-1">Current</span>}
               </span>
               {item.id !== part.id && (
-                <button type="button" className="text-xs font-semibold text-brand hover:underline" onClick={() => openPart(item.id)}>
+                <button
+                  type="button"
+                  className="text-xs font-semibold text-brand hover:underline"
+                  onClick={() => openPart(item.id)}
+                >
                   View
                 </button>
               )}

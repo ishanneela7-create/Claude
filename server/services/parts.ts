@@ -38,7 +38,9 @@ function withoutUnchanged(db: Database, id: string, existing: Row, patch: PartPa
   for (const [key, value] of Object.entries(patch)) {
     if (value === undefined) continue;
     if (key === 'tags') {
-      const before = readPartTags(db, id).map((tag) => tag.toLowerCase()).sort();
+      const before = readPartTags(db, id)
+        .map((tag) => tag.toLowerCase())
+        .sort();
       const after = (value as string[]).map((tag) => tag.toLowerCase()).sort();
       if (before.join('\u0000') !== after.join('\u0000')) changed[key] = value;
     } else if ((existing[key] ?? null) !== (value ?? null)) {

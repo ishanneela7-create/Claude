@@ -26,7 +26,11 @@ export function BulkBar() {
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-2 border-b border-line bg-accent/10 px-3 py-2 text-sm" role="region" aria-label="Selected parts">
+    <div
+      className="flex flex-wrap items-center gap-2 border-b border-line bg-accent/10 px-3 py-2 text-sm"
+      role="region"
+      aria-label="Selected parts"
+    >
       <strong>{selected.size.toLocaleString()} selected</strong>
       <button type="button" className="btn btn-accent" onClick={() => openDialog('bulk')}>
         Edit selected…

@@ -1,4 +1,10 @@
-import { Controller, type Control, type FieldErrors, type UseFormRegister, type UseFormSetValue } from 'react-hook-form';
+import {
+  Controller,
+  type Control,
+  type FieldErrors,
+  type UseFormRegister,
+  type UseFormSetValue,
+} from 'react-hook-form';
 import { CUSTOM_SOURCE_LABELS, CUSTOM_SOURCES, MATERIALS } from '@shared/constants';
 import type { FormValues } from '../../lib/partForm';
 import { Field } from './Field';
@@ -58,7 +64,13 @@ export function CustomFields({ register, control, setValue, errors }: Props) {
         </div>
       </fieldset>
 
-      <Field id="stud_pattern" label="Stud pattern" error={message('stud_pattern')} className="col-span-2" hint='Describe where the studs go, e.g. "2 x 4 full grid" or "ring of 8"'>
+      <Field
+        id="stud_pattern"
+        label="Stud pattern"
+        error={message('stud_pattern')}
+        className="col-span-2"
+        hint='Describe where the studs go, e.g. "2 x 4 full grid" or "ring of 8"'
+      >
         <input id="stud_pattern" className="field" {...register('stud_pattern')} />
       </Field>
 
@@ -74,12 +86,25 @@ export function CustomFields({ register, control, setValue, errors }: Props) {
         <Controller
           control={control}
           name="parent_part_id"
-          render={({ field }) => <ParentPartPicker id="parent_part_id" value={field.value} onChange={field.onChange} />}
+          render={({ field }) => (
+            <ParentPartPicker id="parent_part_id" value={field.value} onChange={field.onChange} />
+          )}
         />
       </Field>
 
-      <Field id="print_profile_notes" label="Print profile notes" error={message('print_profile_notes')} className="col-span-2">
-        <textarea id="print_profile_notes" rows={3} className="field" placeholder="Layer height, infill, supports, temperature…" {...register('print_profile_notes')} />
+      <Field
+        id="print_profile_notes"
+        label="Print profile notes"
+        error={message('print_profile_notes')}
+        className="col-span-2"
+      >
+        <textarea
+          id="print_profile_notes"
+          rows={3}
+          className="field"
+          placeholder="Layer height, infill, supports, temperature…"
+          {...register('print_profile_notes')}
+        />
       </Field>
 
       <ModelPicker

@@ -15,7 +15,9 @@ describe('colors', () => {
     expect(created.status).toBe(201);
     expect(created.body).toMatchObject({ rgb: 'FF8800', is_custom: true });
     expect(created.body.id).toBeGreaterThanOrEqual(100000);
-    expect((await app.api.post('/api/colors').send({ name: 'sunset', rgb: '000000' })).status).toBe(409);
+    expect((await app.api.post('/api/colors').send({ name: 'sunset', rgb: '000000' })).status).toBe(
+      409,
+    );
     expect((await app.api.post('/api/colors').send({ name: 'Bad', rgb: 'xyz' })).status).toBe(400);
   });
 
@@ -45,7 +47,9 @@ describe('tags', () => {
     const created = await app.api.post('/api/tags').send({ name: 'extra' });
     expect(created.status).toBe(201);
     expect((await app.api.post('/api/tags').send({ name: 'EXTRA' })).status).toBe(409);
-    expect((await app.api.patch(`/api/tags/${created.body.id}`).send({ name: 'new' })).status).toBe(409);
+    expect((await app.api.patch(`/api/tags/${created.body.id}`).send({ name: 'new' })).status).toBe(
+      409,
+    );
     expect((await app.api.delete(`/api/tags/${tags.body[0].id}`)).status).toBe(204);
     expect((await app.api.get(`/api/parts/${part.body.id}`)).body.tags).toEqual([]);
     expect((await app.api.delete('/api/tags/missing')).status).toBe(404);
@@ -58,12 +62,16 @@ describe('smart views', () => {
     expect(list.body.map((view: { name: string }) => view.name)).toEqual(
       expect.arrayContaining(['Low stock', 'Custom parts', 'Needs sorting', 'Missing location']),
     );
-    const created = await app.api.post('/api/views').send({ name: 'Red bricks', filter: { q: 'color:red' } });
+    const created = await app.api
+      .post('/api/views')
+      .send({ name: 'Red bricks', filter: { q: 'color:red' } });
     expect(created.status).toBe(201);
     const edited = await app.api.patch(`/api/views/${created.body.id}`).send({ name: 'Reds' });
     expect(edited.body.name).toBe('Reds');
     expect((await app.api.delete('/api/views/builtin-low-stock')).status).toBe(409);
-    expect((await app.api.patch('/api/views/builtin-low-stock').send({ name: 'x' })).status).toBe(409);
+    expect((await app.api.patch('/api/views/builtin-low-stock').send({ name: 'x' })).status).toBe(
+      409,
+    );
     expect((await app.api.delete(`/api/views/${created.body.id}`)).status).toBe(204);
     expect((await app.api.post('/api/views').send({ name: '' })).status).toBe(400);
   });
@@ -71,7 +79,9 @@ describe('smart views', () => {
   it('the built-in views really filter', async () => {
     await app.api.post('/api/parts').send(officialBrick({ quantity: 1, tags: ['needs sorting'] }));
     for (const id of ['builtin-low-stock', 'builtin-needs-sorting', 'builtin-missing-location']) {
-      const view = (await app.api.get('/api/views')).body.find((item: { id: string }) => item.id === id);
+      const view = (await app.api.get('/api/views')).body.find(
+        (item: { id: string }) => item.id === id,
+      );
       const query = new URLSearchParams(
         Object.entries(view.filter).map(([key, value]) => [key, String(value)]),
       );
@@ -86,7 +96,10 @@ describe('misc', () => {
     const missing = await app.api.get('/api/nothing-here');
     expect(missing.status).toBe(404);
     expect(missing.body.error.code).toBe('not_found');
-    const bad = await app.api.post('/api/parts').set('Content-Type', 'application/json').send('{oops');
+    const bad = await app.api
+      .post('/api/parts')
+      .set('Content-Type', 'application/json')
+      .send('{oops');
     expect(bad.status).toBe(400);
   });
 });

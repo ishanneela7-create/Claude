@@ -12,7 +12,9 @@ if (direction === 'up') {
   console.log(applied.length ? `Applied migrations: ${applied.join(', ')}` : 'Already up to date');
 } else if (direction === 'down') {
   const undone = migrateDown(db, file, steps);
-  console.log(`Reverted migrations: ${undone.join(', ') || 'none'} (a backup copy was saved first)`);
+  console.log(
+    `Reverted migrations: ${undone.join(', ') || 'none'} (a backup copy was saved first)`,
+  );
 } else {
   console.error('Usage: tsx scripts/migrate.ts up | down [steps]');
   process.exitCode = 1;

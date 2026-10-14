@@ -34,7 +34,9 @@ describe('CSV import', () => {
   it('limits the preview sample to 20 rows', async () => {
     const lines = ['name,design_id,color,quantity'];
     for (let index = 0; index < 30; index++) lines.push(`Part ${index},${5000 + index},Red,1`);
-    const response = await app.api.post('/api/imports/preview').send({ format: 'csv', text: lines.join('\n') });
+    const response = await app.api
+      .post('/api/imports/preview')
+      .send({ format: 'csv', text: lines.join('\n') });
     expect(response.body.sample).toHaveLength(20);
     expect(response.body.total_rows).toBe(30);
   });
@@ -44,7 +46,11 @@ describe('CSV import', () => {
       .post('/api/imports')
       .send({ format: 'csv', text: csv, source_name: 'my.csv' });
     expect(response.status).toBe(201);
-    expect(response.body.import).toMatchObject({ created_count: 2, updated_count: 0, status: 'done' });
+    expect(response.body.import).toMatchObject({
+      created_count: 2,
+      updated_count: 0,
+      status: 'done',
+    });
     expect(response.body.errors).toHaveLength(2);
     const list = (await app.api.get('/api/parts?sort=name')).body;
     expect(list.total).toBe(2);
@@ -95,32 +101,47 @@ describe('CSV import', () => {
     expect(parts.total).toBe(1);
     expect(parts.items[0].quantity).toBe(10);
     expect((await app.api.get('/api/parts?q=plate')).body.total).toBe(0);
-    expect((await app.api.post(`/api/imports/${imported.body.import.id}/rollback`)).status).toBe(409);
+    expect((await app.api.post(`/api/imports/${imported.body.import.id}/rollback`)).status).toBe(
+      409,
+    );
     expect((await app.api.post('/api/imports/nope/rollback')).status).toBe(404);
   });
 
   it('validates the request and the file', async () => {
-    expect((await app.api.post('/api/imports').send({ format: 'xml', text: 'a' })).status).toBe(400);
-    expect((await app.api.post('/api/imports/preview').send({ format: 'csv', text: '' })).status).toBe(400);
+    expect((await app.api.post('/api/imports').send({ format: 'xml', text: 'a' })).status).toBe(
+      400,
+    );
+    expect(
+      (await app.api.post('/api/imports/preview').send({ format: 'csv', text: '' })).status,
+    ).toBe(400);
   });
 });
 
 describe('Rebrickable import', () => {
   it('reads Part,Color,Quantity exports using color ids', async () => {
     const text = 'Part,Color,Quantity\n3001,4,20\n3023,1,7\n3001,4,5\n9999,555,1';
-    const preview = await app.api.post('/api/imports/preview').send({ format: 'rebrickable', text });
+    const preview = await app.api
+      .post('/api/imports/preview')
+      .send({ format: 'rebrickable', text });
     expect(preview.body).toMatchObject({ total_rows: 4, valid_rows: 3 });
     const response = await app.api.post('/api/imports').send({ format: 'rebrickable', text });
     expect(response.body.import).toMatchObject({ created_count: 2, updated_count: 1 });
     const brick = (await app.api.get('/api/parts?q=3001')).body.items[0];
-    expect(brick).toMatchObject({ quantity: 25, color_name: 'Red', rebrickable_part_num: '3001', name: 'Part 3001' });
+    expect(brick).toMatchObject({
+      quantity: 25,
+      color_name: 'Red',
+      rebrickable_part_num: '3001',
+      name: 'Part 3001',
+    });
   });
 
   it('also reads inventory style headers and rejects other files', async () => {
     const text = 'inventory_id,part_num,color_id,quantity,is_spare\n1,3001,4,3,f';
     const response = await app.api.post('/api/imports').send({ format: 'rebrickable', text });
     expect(response.body.import.created_count).toBe(1);
-    const wrong = await app.api.post('/api/imports').send({ format: 'rebrickable', text: 'a,b\n1,2' });
+    const wrong = await app.api
+      .post('/api/imports')
+      .send({ format: 'rebrickable', text: 'a,b\n1,2' });
     expect(wrong.status).toBe(400);
   });
 });

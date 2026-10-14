@@ -19,11 +19,17 @@ createApp(context).listen(port, () => {
 });
 
 /* Only the small starter colors are installed? Try to fetch the full Rebrickable list in the background. */
-const official = context.db.prepare('SELECT COUNT(*) AS n FROM colors WHERE is_custom = 0').get() as { n: number };
+const official = context.db
+  .prepare('SELECT COUNT(*) AS n FROM colors WHERE is_custom = 0')
+  .get() as { n: number };
 if (official.n < 60 && process.env.SKIP_COLOR_DOWNLOAD !== '1') {
   downloadRebrickableColors(8000)
-    .then((colors) => console.log(`Installed ${seedColors(context.db, colors)} Rebrickable colors.`))
+    .then((colors) =>
+      console.log(`Installed ${seedColors(context.db, colors)} Rebrickable colors.`),
+    )
     .catch((error: unknown) =>
-      console.log(`Using the starter colors (could not download Rebrickable's list: ${String(error)}). Run "npm run seed" when online.`),
+      console.log(
+        `Using the starter colors (could not download Rebrickable's list: ${String(error)}). Run "npm run seed" when online.`,
+      ),
     );
 }

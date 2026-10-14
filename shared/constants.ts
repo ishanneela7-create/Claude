@@ -10,7 +10,12 @@ export const CATEGORIES = [
 ] as const;
 
 export const PART_KINDS = ['official', 'custom'] as const;
-export const CUSTOM_SOURCES = ['3d_printed', 'modified_official', 'scratch_built', 'other'] as const;
+export const CUSTOM_SOURCES = [
+  '3d_printed',
+  'modified_official',
+  'scratch_built',
+  'other',
+] as const;
 export const MATERIALS = ['PLA', 'PETG', 'resin', 'other'] as const;
 
 export const CUSTOM_SOURCE_LABELS: Record<(typeof CUSTOM_SOURCES)[number], string> = {

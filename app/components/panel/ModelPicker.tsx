@@ -59,9 +59,9 @@ export function ModelPicker({ onMeasured }: Props) {
             <ModelViewer object={model.object} />
           </Suspense>
           <p className="text-sm" aria-live="polite">
-            Size: {model.size.x.toFixed(1)} x {model.size.y.toFixed(1)} x {model.size.z.toFixed(1)} mm.
-            Filled in as {model.dimensions.width} x {model.dimensions.depth} studs, {model.dimensions.height}{' '}
-            plates tall (you can still edit the numbers).
+            Size: {model.size.x.toFixed(1)} x {model.size.y.toFixed(1)} x {model.size.z.toFixed(1)}{' '}
+            mm. Filled in as {model.dimensions.width} x {model.dimensions.depth} studs,{' '}
+            {model.dimensions.height} plates tall (you can still edit the numbers).
           </p>
         </div>
       )}
