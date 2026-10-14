@@ -6,9 +6,15 @@ import { buildMatchExpression } from './searchIndex';
 export interface BuiltFilter {
   where: string;
   params: Array<string | number>;
-  /** Plain words that FTS could not match; used by the fuzzy fallback. */
+  /** Plain words typed in the search box. */
   terms: string[];
   hasText: boolean;
+  /** True when the only condition is the text match (so the search index can count by itself). */
+  textOnly: boolean;
+  usesColor: boolean;
+  usesLocation: boolean;
+  /** The text match expression for the search index. */
+  match: string | null;
 }
 
 function likeValue(text: string): string {
@@ -18,22 +24,21 @@ function likeValue(text: string): string {
 const NEEDS_SORTING_TAGS = "('needs sorting', 'needs-sorting')";
 
 /** Builds the WHERE part of a part list query from saved filters and the search box. */
-export function buildFilter(filter: PartFilter, idList?: string[]): BuiltFilter {
+export function buildFilter(filter: PartFilter, termsOverride?: string[]): BuiltFilter {
   const clauses: string[] = ['p.deleted_at IS NULL', 'p.is_current = 1'];
   const params: Array<string | number> = [];
   const parsed = parseSearch(filter.q ?? '');
+  const terms = termsOverride ?? parsed.terms;
 
-  const match = buildMatchExpression(parsed.terms);
-  if (idList) {
-    clauses.push(`p.id IN (${idList.map(() => '?').join(',') || "''"})`);
-    params.push(...idList);
-  } else if (match) {
-    clauses.push('p.id IN (SELECT part_id FROM parts_search WHERE parts_search MATCH ?)');
+  const match = buildMatchExpression(terms);
+  if (match) {
+    clauses.push('p.rowid IN (SELECT rowid FROM parts_search WHERE parts_search MATCH ?)');
     params.push(match);
   }
+  const baseClauseCount = clauses.length;
 
   if (parsed.color) {
-    clauses.push("c.name LIKE ? ESCAPE '\\'");
+    clauses.push("p.color_id IN (SELECT id FROM colors WHERE name LIKE ? ESCAPE '\\')");
     params.push(likeValue(parsed.color));
   }
   if (parsed.category) {
@@ -41,7 +46,7 @@ export function buildFilter(filter: PartFilter, idList?: string[]): BuiltFilter 
     params.push(likeValue(parsed.category));
   }
   if (parsed.location) {
-    clauses.push("l.path LIKE ? ESCAPE '\\'");
+    clauses.push("p.location_id IN (SELECT id FROM locations WHERE path LIKE ? ESCAPE '\\')");
     params.push(likeValue(parsed.location));
   }
   if (parsed.tag) {
@@ -98,7 +103,11 @@ export function buildFilter(filter: PartFilter, idList?: string[]): BuiltFilter 
   return {
     where: clauses.join(' AND '),
     params,
-    terms: parsed.terms,
+    terms,
     hasText: match !== null,
+    textOnly: match !== null && clauses.length === baseClauseCount,
+    usesColor: false,
+    usesLocation: false,
+    match,
   };
 }

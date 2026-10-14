@@ -65,9 +65,11 @@ export function reindexParts(db: Database, ids: Iterable<string>): void {
   const list = [...ids];
   const select = db.prepare(`${SOURCE_SQL} WHERE p.id = ?`);
   const rows: IndexSource[] = [];
+  const dropByPartId = db.prepare('DELETE FROM parts_search WHERE part_id = ?');
   for (const id of list) {
     const row = select.get(id) as IndexSource | undefined;
     if (row) rows.push(row);
+    else dropByPartId.run(id); // the part row is gone (e.g. undo of "add part")
   }
   writeEntries(db, rows);
   bumpDataVersion();

@@ -81,6 +81,8 @@ export interface PartListResult {
   total: number;
   offset: number;
   limit: number;
+  /** Set when a typed word matched nothing and was swapped for the closest real word. */
+  corrections?: Array<{ from: string; to: string }>;
 }
 
 export interface DuplicateGroup {

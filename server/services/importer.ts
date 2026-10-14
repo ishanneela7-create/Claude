@@ -3,6 +3,7 @@ import { parseCsv } from '@shared/csv';
 import { guessMapping, looksLikeRebrickable, rebrickableMapping } from '@shared/importMapping';
 import type { ImportMapping, ImportRunRequest } from '@shared/importSchemas';
 import type { ImportRecord } from '@shared/types';
+import { refreshStatistics } from '../db';
 import { badRequest, conflict, notFound } from '../http';
 import { ActionRecorder } from '../recorder';
 import { loadColorCache, normalizeRow, type NormalizedRow } from './importNormalize';
@@ -176,6 +177,7 @@ export function runImport(db: Database, request: ImportRunRequest): ImportResult
     );
     reindexParts(db, recorder.touchedPartIds);
   })();
+  if (created > 1000) refreshStatistics(db);
   return { import: getImport(db, importId), errors };
 }
 

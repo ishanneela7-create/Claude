@@ -74,6 +74,12 @@ export function LibraryView() {
         aria-rowcount={paged.total + 1}
         aria-busy={paged.loading}
       >
+        {paged.corrections && (
+          <p role="status" className="border-b border-line bg-brand/10 px-3 py-2 text-sm">
+            Nothing matched what you typed, so these are results for{' '}
+            {paged.corrections.map((item) => `“${item.to}” (instead of “${item.from}”)`).join(', ')}.
+          </p>
+        )}
         {paged.error && (
           <p role="alert" className="m-4 rounded-md border border-danger p-3 text-sm text-danger">
             {paged.error}

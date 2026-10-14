@@ -11,6 +11,7 @@ const PAGE_SIZE = DEFAULT_PAGE_SIZE;
 export interface PagedParts {
   total: number;
   groups: GroupCount[] | null;
+  corrections: Array<{ from: string; to: string }> | null;
   loading: boolean;
   error: string | null;
   getRow(index: number): PartRecord | null;
@@ -33,6 +34,7 @@ export function usePagedParts(params: QueryParams, group: string | null): PagedP
   const [, setTick] = useState(0);
   const [total, setTotal] = useState(0);
   const [groups, setGroups] = useState<GroupCount[] | null>(null);
+  const [corrections, setCorrections] = useState<PagedParts['corrections']>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -48,6 +50,7 @@ export function usePagedParts(params: QueryParams, group: string | null): PagedP
       if (current !== generation.current) return;
       pages.current.set(page, result.items);
       setTotal(result.total);
+      if (page === 0) setCorrections(result.corrections ?? null);
       setError(null);
       setTick((value) => value + 1);
     } catch (caught) {
@@ -92,5 +95,5 @@ export function usePagedParts(params: QueryParams, group: string | null): PagedP
     [loadPage],
   );
 
-  return { total, groups, loading, error, getRow, ensureRow };
+  return { total, groups, corrections, loading, error, getRow, ensureRow };
 }

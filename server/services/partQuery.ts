@@ -1,107 +1,129 @@
 import type { Database } from 'better-sqlite3';
-import Fuse from 'fuse.js';
 import type { GROUP_FIELDS } from '@shared/constants';
 import type { PartFilter, PartListQuery } from '@shared/querySchemas';
 import type { PartListResult } from '@shared/types';
-import { currentDataVersion } from './dataVersion';
-import { buildFilter } from './partFilters';
+import { buildFilter, type BuiltFilter } from './partFilters';
 import { PART_SELECT, toPartRecords } from './partRows';
+import { correctTerms } from './spellFix';
 
 export type GroupField = (typeof GROUP_FIELDS)[number];
 
-const SORT_SQL: Record<PartListQuery['sort'], string[]> = {
-  name: ['p.name COLLATE NOCASE'],
-  category: ['p.category', 'p.name COLLATE NOCASE'],
-  color: ['c.name COLLATE NOCASE', 'p.name COLLATE NOCASE'],
-  quantity: ['p.quantity', 'p.name COLLATE NOCASE'],
-  location: ["COALESCE(l.path, '') COLLATE NOCASE", 'p.name COLLATE NOCASE'],
-  created_at: ['p.created_at'],
+interface OrderSpec {
+  columns: string[];
+  usesColor?: boolean;
+  usesLocation?: boolean;
+}
+
+const SORTS: Record<PartListQuery['sort'], OrderSpec> = {
+  name: { columns: ['p.name COLLATE NOCASE'] },
+  category: { columns: ['p.category', 'p.name COLLATE NOCASE'] },
+  color: { columns: ['c.name COLLATE NOCASE', 'p.name COLLATE NOCASE'], usesColor: true },
+  quantity: { columns: ['p.quantity', 'p.name COLLATE NOCASE'] },
+  location: {
+    columns: ["COALESCE(l.path, '') COLLATE NOCASE", 'p.name COLLATE NOCASE'],
+    usesLocation: true,
+  },
+  created_at: { columns: ['p.created_at'] },
 };
 
-export const GROUP_SQL: Record<GroupField, string> = {
-  category: 'p.category',
-  color: 'c.name',
-  location: "COALESCE(l.path, '(No location)')",
-  kind: 'p.kind',
-  subcategory: "COALESCE(NULLIF(p.subcategory, ''), '(None)')",
+interface GroupSpec {
+  expr: string;
+  order: string;
+  usesColor?: boolean;
+  usesLocation?: boolean;
+}
+
+export const GROUPS: Record<GroupField, GroupSpec> = {
+  category: { expr: 'p.category', order: 'p.category' },
+  kind: { expr: 'p.kind', order: 'p.kind' },
+  color: { expr: 'c.name', order: 'c.name COLLATE NOCASE', usesColor: true },
+  location: {
+    expr: "COALESCE(l.path, '(No location)')",
+    order: "COALESCE(l.path, '(No location)') COLLATE NOCASE",
+    usesLocation: true,
+  },
+  subcategory: {
+    expr: "COALESCE(NULLIF(p.subcategory, ''), '(None)')",
+    order: "COALESCE(NULLIF(p.subcategory, ''), '(None)') COLLATE NOCASE",
+  },
 };
 
-const FROM_SQL = `FROM parts p JOIN colors c ON c.id = p.color_id
-                  LEFT JOIN locations l ON l.id = p.location_id`;
+interface Needs {
+  color: boolean;
+  location: boolean;
+}
 
-function orderBy(sort: PartListQuery['sort'], dir: 'asc' | 'desc', group?: GroupField): string {
-  const direction = dir === 'desc' ? 'DESC' : 'ASC';
-  const sortParts = SORT_SQL[sort].map((piece, index) =>
-    index === 0 ? `${piece} ${direction}` : piece,
+/** Only join the color and location tables when the query really needs them. */
+function fromClause(needs: Needs): string {
+  return (
+    'FROM parts p' +
+    (needs.color ? ' JOIN colors c ON c.id = p.color_id' : '') +
+    (needs.location ? ' LEFT JOIN locations l ON l.id = p.location_id' : '')
   );
-  const prefix = group ? [`${GROUP_SQL[group]} COLLATE NOCASE ASC`] : [];
-  return [...prefix, ...sortParts, 'p.id'].join(', ');
 }
 
-interface FuzzyCache {
-  version: number;
-  fuse: Fuse<{ id: string; text: string }>;
+function orderClause(sort: PartListQuery['sort'], dir: 'asc' | 'desc', group?: GroupField): string {
+  const direction = dir === 'desc' ? 'DESC' : 'ASC';
+  const parts = [...SORTS[sort].columns, 'p.id'].map((column) => `${column} ${direction}`);
+  return group ? [`${GROUPS[group].order} ASC`, ...parts].join(', ') : parts.join(', ');
 }
-const fuzzyCaches = new WeakMap<Database, FuzzyCache>();
 
-/** Typo-tolerant backup: only used when the normal search finds nothing. */
-function fuzzyIds(db: Database, terms: string[]): string[] {
-  let cache = fuzzyCaches.get(db);
-  if (!cache || cache.version !== currentDataVersion()) {
-    const rows = db
-      .prepare(
-        `SELECT p.id, p.name || ' ' || COALESCE(p.design_id, '') || ' ' || c.name AS text
-         ${FROM_SQL} WHERE p.deleted_at IS NULL AND p.is_current = 1`,
-      )
-      .all() as { id: string; text: string }[];
-    cache = {
-      version: currentDataVersion(),
-      fuse: new Fuse(rows, { keys: ['text'], threshold: 0.3, ignoreLocation: true }),
-    };
-    fuzzyCaches.set(db, cache);
+function countMatches(db: Database, built: BuiltFilter, needs: Needs): number {
+  if (built.textOnly && built.match) {
+    // The search index only holds live, current parts, so it can count by itself (very fast).
+    const row = db
+      .prepare('SELECT COUNT(*) AS n FROM parts_search WHERE parts_search MATCH ?')
+      .get(built.match) as { n: number };
+    return row.n;
   }
-  return cache.fuse
-    .search(terms.join(' '), { limit: 200 })
-    .map((result) => result.item.id);
+  const row = db
+    .prepare(`SELECT COUNT(*) AS n ${fromClause(needs)} WHERE ${built.where}`)
+    .get(...built.params) as { n: number };
+  return row.n;
 }
 
-export function listParts(
-  db: Database,
-  query: PartListQuery,
-  group?: GroupField,
-): PartListResult {
+export function listParts(db: Database, query: PartListQuery, group?: GroupField): PartListResult {
   const { offset, limit, sort, dir, ...filter } = query;
+  const sortSpec = SORTS[sort];
+  const groupSpec = group ? GROUPS[group] : undefined;
   let built = buildFilter(filter);
-  const run = (current: typeof built) => {
-    const total = (
-      db.prepare(`SELECT COUNT(*) AS n ${FROM_SQL} WHERE ${current.where}`).get(...current.params) as {
-        n: number;
-      }
-    ).n;
-    return total;
-  };
+  let corrections: PartListResult['corrections'];
 
-  let total = run(built);
-  if (total === 0 && built.hasText) {
-    const ids = fuzzyIds(db, built.terms);
-    if (ids.length > 0) {
-      built = buildFilter({ ...filter, q: removeTerms(filter.q ?? '', built.terms) }, ids);
-      total = run(built);
+  const needsFor = (current: BuiltFilter): Needs => ({
+    color: current.usesColor || !!sortSpec.usesColor || !!groupSpec?.usesColor,
+    location: current.usesLocation || !!sortSpec.usesLocation || !!groupSpec?.usesLocation,
+  });
+
+  let total = countMatches(db, built, needsFor(built));
+  if (total === 0 && built.terms.length > 0) {
+    const fixed = correctTerms(db, built.terms);
+    if (fixed) {
+      built = buildFilter(filter, fixed.terms);
+      total = countMatches(db, built, needsFor(built));
+      corrections = fixed.changes;
     }
   }
 
-  const rows = db
-    .prepare(
-      `${PART_SELECT} WHERE ${built.where} ORDER BY ${orderBy(sort, dir, group)} LIMIT ? OFFSET ?`,
-    )
-    .all(...built.params, limit, offset) as Parameters<typeof toPartRecords>[1];
-  return { items: toPartRecords(db, rows), total, offset, limit };
-}
+  // Step 1: find the ids of this page (cheap: walks an index). Step 2: load those rows.
+  const needs = needsFor(built);
+  const ids = (
+    db
+      .prepare(
+        `SELECT p.id AS id ${fromClause(needs)} WHERE ${built.where}
+         ORDER BY ${orderClause(sort, dir, group)} LIMIT ? OFFSET ?`,
+      )
+      .all(...built.params, limit, offset) as { id: string }[]
+  ).map((row) => row.id);
 
-function removeTerms(q: string, terms: string[]): string {
-  let result = q;
-  for (const term of terms) result = result.replace(term, '');
-  return result.trim();
+  let items: PartListResult['items'] = [];
+  if (ids.length > 0) {
+    const rows = db
+      .prepare(`${PART_SELECT} WHERE p.id IN (${ids.map(() => '?').join(',')})`)
+      .all(...ids) as Parameters<typeof toPartRecords>[1];
+    const byId = new Map(toPartRecords(db, rows).map((part) => [part.id, part]));
+    items = ids.flatMap((id) => byId.get(id) ?? []);
+  }
+  return { items, total, offset, limit, ...(corrections && { corrections }) };
 }
 
 export function countGroups(
@@ -109,11 +131,20 @@ export function countGroups(
   filter: PartFilter,
   group: GroupField,
 ): Array<{ key: string; count: number }> {
-  const built = buildFilter(filter);
+  let built = buildFilter(filter);
+  const spec = GROUPS[group];
+  const needsFor = (current: BuiltFilter): Needs => ({
+    color: current.usesColor || !!spec.usesColor,
+    location: current.usesLocation || !!spec.usesLocation,
+  });
+  if (built.terms.length > 0 && countMatches(db, built, needsFor(built)) === 0) {
+    const fixed = correctTerms(db, built.terms);
+    if (fixed) built = buildFilter(filter, fixed.terms);
+  }
   return db
     .prepare(
-      `SELECT ${GROUP_SQL[group]} AS key, COUNT(*) AS count ${FROM_SQL}
-       WHERE ${built.where} GROUP BY key ORDER BY key COLLATE NOCASE`,
+      `SELECT ${spec.expr} AS key, COUNT(*) AS count ${fromClause(needsFor(built))}
+       WHERE ${built.where} GROUP BY key ORDER BY ${spec.order}`,
     )
     .all(...built.params) as Array<{ key: string; count: number }>;
 }
@@ -131,7 +162,10 @@ export function totalsFor(db: Database): { parts: number; pieces: number } {
 export function listPartIds(db: Database, filter: PartFilter, cap = 50000): string[] {
   const built = buildFilter(filter);
   const rows = db
-    .prepare(`SELECT p.id ${FROM_SQL} WHERE ${built.where} LIMIT ?`)
+    .prepare(
+      `SELECT p.id AS id ${fromClause({ color: built.usesColor, location: built.usesLocation })}
+       WHERE ${built.where} LIMIT ?`,
+    )
     .all(...built.params, cap) as { id: string }[];
   return rows.map((row) => row.id);
 }

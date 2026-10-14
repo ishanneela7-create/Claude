@@ -73,7 +73,7 @@ export function LocationsDialog({ onClose }: { onClose(): void }) {
     const win = window.open('', '_blank', 'width=420,height=520');
     if (!win) return;
     win.document.write(
-      `<title>${selected.name}</title><body style="font-family:sans-serif;text-align:center"><h2>${selected.label || selected.name}</h2><img src="${url}" width="320" height="320" alt="QR code for ${selected.name}"><p>${selected.name}</p><script>window.onload=()=>window.print()<\/script></body>`,
+      `<title>${selected.name}</title><body style="font-family:sans-serif;text-align:center"><h2>${selected.label || selected.name}</h2><img src="${url}" width="320" height="320" alt="QR code for ${selected.name}"><p>${selected.name}</p><script>window.onload=()=>window.print()</script></body>`,
     );
     win.document.close();
   };

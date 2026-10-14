@@ -28,3 +28,9 @@ export function createContext(dataDir: string, databaseFile?: string): AppContex
   migrateUp(db, file);
   return { db, dataDir, photosDir, databaseFile: file };
 }
+
+/** Gives SQLite fresh statistics so it picks the fastest query plans (cheap, even for 50,000 parts). */
+export function refreshStatistics(db: SqliteDatabase): void {
+  db.pragma('analysis_limit = 2000');
+  db.exec('ANALYZE');
+}
